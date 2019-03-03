@@ -1,0 +1,107 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.8'
+        classpath 'com.bmuschko:gradle-docker-plugin:4.3.0'
+        classpath 'io.franzbecker:gradle-lombok:2.0'
+    }
+}
+
+plugins {
+    id 'org.springframework.boot' version '2.1.2.RELEASE' apply false
+    id 'io.spring.dependency-management' version '1.0.6.RELEASE' apply false
+    id 'org.sonarqube' version '2.7'
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+allprojects {
+    apply plugin: 'idea'
+    apply plugin: 'eclipse'
+    apply plugin: 'jacoco'
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'io.franzbecker.gradle-lombok'
+
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+
+    group = 'com.github.delegacy.youngbot'
+    version = '0.1.0-SNAPSHOT'
+    archivesBaseName = 'young-bot-' + project.name
+
+    sourceCompatibility = 11
+    targetCompatibility = 11
+
+    test {
+        useJUnitPlatform()
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom 'org.springframework.boot:spring-boot-dependencies:2.1.2.RELEASE'
+            mavenBom 'com.linecorp.armeria:armeria-bom:0.79.0'
+        }
+
+        dependencies {
+            dependency 'io.reactivex.rxjava2:rxjava:2.2.6'
+
+            dependency 'javax.annotation:javax.annotation-api:1.3.2'
+
+            // Logging
+            dependency 'ch.qos.logback:logback-classic:1.2.3'
+            dependency 'org.slf4j:log4j-over-slf4j:1.7.25'
+
+            // Test
+            dependencySet(group:'org.junit.jupiter', version: '5.3.2') {
+                entry 'junit-jupiter-api'
+                entry 'junit-jupiter-engine'
+            }
+
+            // Slack
+            dependency 'com.hubspot.slack:slack-base:1.1'
+
+            // LINE
+            dependency 'com.linecorp.bot:line-bot-model:2.4.0'
+        }
+    }
+
+    dependencies {
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        // WebTestClient still requires this lib.
+        testRuntimeOnly 'org.springframework.boot:spring-boot-starter-reactor-netty'
+
+        testImplementation 'org.junit.jupiter:junit-jupiter-api'
+        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    }
+}
+
+task codeCoverageReport(type: JacocoReport) {
+    executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+
+    subprojects.each {
+        sourceSets it.sourceSets.main
+    }
+
+    reports {
+        xml.enabled true
+        xml.destination file("${buildDir}/reports/jacoco/report.xml")
+        html.enabled false
+        csv.enabled false
+    }
+}
+
+codeCoverageReport.dependsOn {
+    subprojects*.test
+}

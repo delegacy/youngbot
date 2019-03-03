@@ -1,0 +1,4 @@
+rootProject.name = 'young-bot'
+
+include 'protocol'
+include 'server'

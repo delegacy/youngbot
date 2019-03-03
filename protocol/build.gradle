@@ -1,0 +1,54 @@
+apply plugin: 'com.google.protobuf'
+
+ext {
+    protobufVersion = '3.6.1'
+    grpcVersion = '1.17.1'
+
+    generatedFilesBaseDir = "$projectDir/src/generated"
+}
+
+dependencyManagement {
+    dependencies {
+        dependency "com.google.protobuf:protobuf-java:${protobufVersion}"
+        dependencySet(group: 'io.grpc', version: "${grpcVersion}") {
+            entry 'grpc-protobuf'
+            entry 'grpc-stub'
+        }
+    }
+}
+
+dependencies {
+    implementation 'com.google.protobuf:protobuf-java'
+    implementation 'io.grpc:grpc-protobuf'
+    implementation 'io.grpc:grpc-stub'
+
+    if (JavaVersion.current().isJava9Compatible()) {
+        // Workaround for @javax.annotation.Generated
+        // see: https://github.com/grpc/grpc-java/issues/3633
+        implementation 'javax.annotation:javax.annotation-api'
+    }
+}
+
+protobuf {
+    generatedFilesBaseDir = project.ext.generatedFilesBaseDir
+
+    protoc {
+        artifact = "com.google.protobuf:protoc:${protobufVersion}"
+    }
+
+    plugins {
+        grpc {
+            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+        }
+    }
+
+    generateProtoTasks {
+        ofSourceSet('main')*.plugins {
+            grpc {}
+        }
+    }
+}
+
+clean {
+    delete project.ext.generatedFilesBaseDir
+}

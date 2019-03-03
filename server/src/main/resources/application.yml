@@ -1,0 +1,17 @@
+server:
+  port: ${PORT:28080}
+
+youngbot:
+  slack:
+    client:
+      base-uri: https://slack.com/api
+      bot-token: bot-token
+  line:
+    channel-token: channel-token
+    channel-secret: channel-secret
+    client:
+      base-uri: https://api.line.me
+
+logging:
+  level:
+    com.github.delegacy.youngbot: DEBUG
