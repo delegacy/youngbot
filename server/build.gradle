@@ -7,6 +7,8 @@ dependencies {
     implementation 'com.linecorp.armeria:armeria-spring-boot-webflux-starter'
     implementation 'com.linecorp.armeria:armeria-grpc'
 
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
     implementation 'io.reactivex.rxjava2:rxjava'
 
     implementation 'com.hubspot.slack:slack-base'
