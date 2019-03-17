@@ -9,8 +9,6 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
-    implementation 'io.reactivex.rxjava2:rxjava'
-
     implementation 'com.hubspot.slack:slack-base'
 
     implementation 'com.linecorp.bot:line-bot-model'

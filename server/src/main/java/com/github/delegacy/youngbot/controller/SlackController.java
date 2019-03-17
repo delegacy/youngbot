@@ -18,9 +18,9 @@ import com.hubspot.slack.client.models.events.SlackEventMessage;
 import com.hubspot.slack.client.models.events.SlackEventWrapper;
 import com.hubspot.slack.client.models.events.SlackEventWrapperIF;
 
-import io.reactivex.Single;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -54,7 +54,7 @@ public class SlackController {
     private final SlackService slackService;
 
     @PostMapping("/event")
-    public Single<String> onEvent(RequestEntity<String> req) {
+    public Mono<String> onEvent(RequestEntity<String> req) {
         final String reqBody = req.getBody();
         log.debug("Received Slack event;reqBody<{}>", reqBody);
 
@@ -76,7 +76,7 @@ public class SlackController {
                 default:
                     // do nothing
             }
-            return Single.just("");
+            return Mono.just("");
         }
 
         if (deserialized instanceof ChallengeEventIF) {
@@ -85,10 +85,10 @@ public class SlackController {
                     ChallengeResponse.builder()
                                      .setChallenge(challengeEvent.getChallenge())
                                      .build();
-            return Single.just(serialize(challengeResponse));
+            return Mono.just(serialize(challengeResponse));
         }
 
         log.warn("Unsupported Slack event<{}>", deserialized);
-        return Single.just("");
+        return Mono.just("");
     }
 }
