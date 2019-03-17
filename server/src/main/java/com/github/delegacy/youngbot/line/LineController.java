@@ -18,9 +18,9 @@ import com.linecorp.bot.model.event.message.MessageContent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.model.objectmapper.ModelObjectMapper;
 
-import io.reactivex.Single;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -34,11 +34,11 @@ public class LineController {
     private final LineService lineService;
 
     @PostMapping("/webhook")
-    public Single<String> onWebhook(RequestEntity<String> req) {
+    public Mono<String> onWebhook(RequestEntity<String> req) {
         final List<String> signatures = req.getHeaders().get("X-Line-Signature");
         if (CollectionUtils.isEmpty(signatures)) {
             log.warn("No X-Line-Signature");
-            return Single.just("");
+            return Mono.just("");
         }
 
         final String signature = signatures.get(0);
@@ -64,7 +64,7 @@ public class LineController {
             lineService.replyMessage(messageEvent.getReplyToken(), textMessageContent.getText());
         });
 
-        return Single.just("");
+        return Mono.just("");
     }
 
     private CallbackRequest parsePayload(String signature, String payload) {
