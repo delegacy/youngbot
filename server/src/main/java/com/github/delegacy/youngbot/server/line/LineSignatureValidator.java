@@ -1,4 +1,4 @@
-package com.github.delegacy.youngbot.line;
+package com.github.delegacy.youngbot.server.line;
 
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;

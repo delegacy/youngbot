@@ -1,4 +1,4 @@
-package com.github.delegacy.youngbot.service;
+package com.github.delegacy.youngbot.server.service;
 
 import org.springframework.stereotype.Service;
 

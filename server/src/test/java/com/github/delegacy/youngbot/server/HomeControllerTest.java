@@ -1,4 +1,4 @@
-package com.github.delegacy.youngbot.controller;
+package com.github.delegacy.youngbot.server;
 
 import javax.annotation.Resource;
 
