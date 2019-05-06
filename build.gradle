@@ -24,13 +24,13 @@ repositories {
 allprojects {
     apply plugin: 'idea'
     apply plugin: 'eclipse'
-    apply plugin: 'jacoco'
 }
 
 subprojects {
     apply plugin: 'java'
     apply plugin: 'io.spring.dependency-management'
     apply plugin: 'io.franzbecker.gradle-lombok'
+    apply plugin: 'jacoco'
 
     repositories {
         mavenCentral()
@@ -44,8 +44,22 @@ subprojects {
     sourceCompatibility = 11
     targetCompatibility = 11
 
+    jacoco {
+        toolVersion = '0.8.3'
+    }
+
+    jacocoTestReport {
+        reports {
+            xml.enabled true
+            html.enabled false
+            csv.enabled false
+        }
+    }
+
     test {
         useJUnitPlatform()
+
+        finalizedBy jacocoTestReport
     }
 
     dependencyManagement {
@@ -62,9 +76,13 @@ subprojects {
             dependency 'org.slf4j:log4j-over-slf4j:1.7.26'
 
             // Test
-            dependencySet(group:'org.junit.jupiter', version: '5.4.0') {
+            dependencySet(group:'org.junit.jupiter', version: '5.4.2') {
                 entry 'junit-jupiter-api'
+                entry 'junit-jupiter-params'
                 entry 'junit-jupiter-engine'
+            }
+            dependencySet(group:'org.junit.platform', version: '1.4.2') {
+                entry 'junit-platform-launcher'
             }
 
             // Slack
@@ -81,25 +99,10 @@ subprojects {
         testRuntimeOnly 'org.springframework.boot:spring-boot-starter-reactor-netty'
 
         testImplementation 'org.junit.jupiter:junit-jupiter-api'
+        testImplementation 'org.junit.jupiter:junit-jupiter-params'
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+        testImplementation 'io.projectreactor:reactor-test'
     }
-}
-
-task codeCoverageReport(type: JacocoReport) {
-    executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
-
-    subprojects.each {
-        sourceSets it.sourceSets.main
-    }
-
-    reports {
-        xml.enabled true
-        xml.destination file("${buildDir}/reports/jacoco/report.xml")
-        html.enabled false
-        csv.enabled false
-    }
-}
-
-codeCoverageReport.dependsOn {
-    subprojects*.test
 }
