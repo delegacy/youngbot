@@ -1,11 +1,11 @@
-package com.github.delegacy.youngbot.conf;
+package com.github.delegacy.youngbot.server.conf;
 
 import javax.annotation.Resource;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.github.delegacy.youngbot.service.HelloService;
+import com.github.delegacy.youngbot.server.service.HelloService;
 
 import com.linecorp.armeria.client.ClientFactory;
 import com.linecorp.armeria.client.circuitbreaker.CircuitBreakerHttpClientBuilder;

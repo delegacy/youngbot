@@ -14,4 +14,4 @@ youngbot:
 
 logging:
   level:
-    com.github.delegacy.youngbot: DEBUG
+    com.github.delegacy.youngbot.server: DEBUG

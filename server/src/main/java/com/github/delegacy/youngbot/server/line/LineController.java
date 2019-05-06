@@ -1,6 +1,7 @@
-package com.github.delegacy.youngbot.line;
+package com.github.delegacy.youngbot.server.line;
 
-import java.io.IOException;
+import static com.github.delegacy.youngbot.server.line.LineJacksonUtils.deserialize;
+
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -10,13 +11,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.delegacy.youngbot.server.RequestContext;
+import com.github.delegacy.youngbot.server.message.service.MessageService;
+import com.github.delegacy.youngbot.server.platform.Platform;
 
 import com.linecorp.bot.model.event.CallbackRequest;
 import com.linecorp.bot.model.event.MessageEvent;
 import com.linecorp.bot.model.event.message.MessageContent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
-import com.linecorp.bot.model.objectmapper.ModelObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,11 +29,9 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequestMapping("/api/line/v1")
 public class LineController {
-    private static final ObjectMapper OM = ModelObjectMapper.createNewObjectMapper();
-
     private final LineSignatureValidator lineSignatureValidator;
 
-    private final LineService lineService;
+    private final MessageService messageService;
 
     @PostMapping("/webhook")
     public Mono<String> onWebhook(RequestEntity<String> req) {
@@ -46,8 +46,6 @@ public class LineController {
         log.debug("Received LINE webhook;signature<{}>,payload<{}>", signature, payload);
 
         final CallbackRequest callbackRequest = parsePayload(signature, payload);
-        log.debug("Received callbackRequest<{}>", callbackRequest);
-
         callbackRequest.getEvents().forEach(event -> {
             if (!(event instanceof MessageEvent)) {
                 return;
@@ -61,7 +59,13 @@ public class LineController {
             }
 
             final TextMessageContent textMessageContent = (TextMessageContent) messageContent;
-            lineService.replyMessage(messageEvent.getReplyToken(), textMessageContent.getText());
+
+            final RequestContext ctx = new RequestContext();
+            ctx.platform(Platform.LINE);
+            ctx.text(textMessageContent.getText());
+            ctx.replyTo(messageEvent.getReplyToken());
+
+            messageService.process(ctx, textMessageContent.getText());
         });
 
         return Mono.just("");
@@ -77,16 +81,11 @@ public class LineController {
             throw new IllegalArgumentException("Invalid signature");
         }
 
-        final CallbackRequest callbackRequest;
-        try {
-            callbackRequest = OM.readValue(json, CallbackRequest.class);
-            if (callbackRequest == null || callbackRequest.getEvents() == null) {
-                throw new IllegalArgumentException("Invalid content");
-            }
-            return callbackRequest;
-        } catch (IOException e) {
-            log.warn("Failed to deserialize the str<{}>", payload);
-            throw new IllegalArgumentException("Failed to deserialize the str");
+        final CallbackRequest callbackRequest = deserialize(json, CallbackRequest.class);
+        if (callbackRequest == null || callbackRequest.getEvents() == null) {
+            throw new IllegalArgumentException("Invalid content");
         }
+
+        return callbackRequest;
     }
 }
