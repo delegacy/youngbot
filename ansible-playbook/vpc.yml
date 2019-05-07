@@ -1,0 +1,105 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - import_tasks: common_tasks.yml
+
+    - name: Create an AWS virtual private clouds
+      ec2_vpc_net:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        name: "{{ vpc_name }}"
+        cidr_block: "{{ vpc_cidr_block }}"
+        dns_hostnames: true
+        dns_support: true
+        tenancy: default
+        state: present
+      register: ec2_vpc_net_result
+
+    - debug:
+        msg: "{{ vpc_name }} is present. ID: {{ ec2_vpc_net_result.vpc.id }}"
+
+    - name: Create a subnet in AWS virtual private clouds (1/2)
+      ec2_vpc_subnet:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        az: "{{ zone1 }}"
+        vpc_id: "{{ ec2_vpc_net_result.vpc.id }}"
+        cidr: "{{ subnet1_cidr_block }}"
+        resource_tags:
+          Name: "{{ subnet1_name }}"
+        state: present
+      register: ec2_vpc_subnet1_result
+
+    - debug:
+        msg: "{{ subnet1_name }} is present. ID: {{ ec2_vpc_subnet1_result.subnet.id }}"
+
+    - name: Create a subnet in AWS virtual private clouds (2/2)
+      ec2_vpc_subnet:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        az: "{{ zone2 }}"
+        vpc_id: "{{ ec2_vpc_net_result.vpc.id }}"
+        cidr: "{{ subnet2_cidr_block }}"
+        resource_tags:
+          Name: "{{ subnet2_name }}"
+        state: present
+      register: ec2_vpc_subnet2_result
+
+    - debug:
+        msg: "{{ subnet2_name }} is present. ID: {{ ec2_vpc_subnet2_result.subnet.id }}"
+
+    - name: Create an AWS VPC Internet gateway
+      ec2_vpc_igw:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        vpc_id: "{{ ec2_vpc_net_result.vpc.id }}"
+        tags:
+          Name: "igw-{{ app_name }}"
+        state: present
+      register: ec2_vpc_igw_result
+
+    - name: Create a EC2 security group
+      ec2_group:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        vpc_id: "{{ ec2_vpc_net_result.vpc.id }}"
+        name: "{{ security_group_name }}"
+        description: "{{ security_group_name }}"
+        rules:
+          - proto: tcp
+            ports:
+              - 443
+            cidr_ip: 0.0.0.0/0
+          - proto: tcp
+            ports:
+              - 22
+              - 80
+              - "{{ app_port }}"
+            cidr_ip: "{{ vpc_cidr_block }}"
+        state: present
+      register: ec2_group_result
+
+    - name: Create a route table for AWS virtual private clouds
+      ec2_vpc_route_table:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        vpc_id: "{{ ec2_vpc_net_result.vpc.id }}"
+        routes:
+          - dest: 0.0.0.0/0
+            gateway_id: "{{ ec2_vpc_igw_result.gateway_id }}"
+        subnets:
+          - "{{ ec2_vpc_subnet1_result.subnet.id }}"
+          - "{{ ec2_vpc_subnet2_result.subnet.id }}"
+        tags:
+          Name: "rt-{{ app_name }}"
+        state: present
+      register: ec2_vpc_route_table_result

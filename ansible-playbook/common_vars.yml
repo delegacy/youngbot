@@ -1,0 +1,27 @@
+---
+app_name: young-bot
+app_ip: 10.0.1.190
+app_port: 28080
+
+vpc_id: vpc-01513d68b0e8d8a82
+vpc_name: "vpc-{{ app_name }}"
+vpc_cidr_block: 10.0.0.0/16
+
+subnet1_id: subnet-0232c23cee9ce8ad9
+subnet1_name: "subnet1-{{ app_name }}"
+subnet1_cidr_block: 10.0.1.0/24
+subnet2_id: subnet-08308b43f4784db5b
+subnet2_name: "subnet2-{{ app_name }}"
+subnet2_cidr_block: 10.0.2.0/24
+
+security_group_name: "sgrp-{{ app_name }}"
+
+cluster_name: "cluster-{{ app_name }}"
+server_name: "{{ app_name }}-server"
+server_target_group_name: "tg-{{ server_name }}"
+server_target_group_arn: 'arn:aws:elasticloadbalancing:ap-northeast-2:601390769788:targetgroup/tg-young-bot-server/71cdc1c66c9e0371'
+server_task_definition_name: "td-{{ server_name }}"
+server_task_definition_revision: 12
+server_container_name: "container-{{ server_name }}"
+task_execution_role_name: "task-execution-role-{{ app_name }}"
+execution_role_arn: 'arn:aws:iam::601390769788:role/task-execution-role-young-bot'

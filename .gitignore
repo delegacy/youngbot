@@ -19,3 +19,7 @@ generated/
 *.iml
 *.ipr
 out/
+
+### Ansible ###
+*.retry
+ansible-playbook.log*

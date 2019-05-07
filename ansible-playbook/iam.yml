@@ -1,0 +1,22 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - import_tasks: common_tasks.yml
+
+    - name: Create an AWS IAM role for task execution
+      iam_role:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        assume_role_policy_document: "{{ lookup('file', 'task-execution-role-{{app_name}}-policy.json') }}"
+        managed_policy:
+          - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
+        name: "{{ task_execution_role_name }}"
+        state: present
+      register: iam_role_result
+
+    - debug:
+        msg: "{{ task_execution_role_name }} is present. ARN: {{ iam_role_result.arn }}"

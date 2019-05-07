@@ -1,0 +1,74 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - import_tasks: common_tasks.yml
+
+    - name: Create an ECS cluster
+      ecs_cluster:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        name: "{{ cluster_name }}"
+        state: present
+      register: ecs_cluster_result
+
+    - name: Registers a task definition in AWS ECS
+      ecs_taskdefinition:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        family: "{{ server_task_definition_name }}"
+        revision: "{{ server_task_definition_revision }}"
+        execution_role_arn: "{{ execution_role_arn }}"
+        launch_type: FARGATE
+        cpu: 256
+        memory: 512
+        network_mode: awsvpc
+        containers:
+          - name: "{{ server_container_name }}"
+            essential: true
+            image: 'delegacy/young-bot-server:latest'
+            portMappings:
+              - containerPort: "{{ app_port }}"
+                hostPort: "{{ app_port }}"
+            environment:
+              - name: YOUNGBOT_LINE_CHANNELSECRET
+                value: "{{ youngbot_line_channel_secret }}"
+              - name: YOUNGBOT_LINE_CHANNELTOKEN
+                value: "{{ youngbot_line_channel_token }}"
+              - name: YOUNGBOT_SLACK_CLIENT_BOTTOKEN
+                value: "{{ youngbot_slack_client_bot_token }}"
+            logConfiguration:
+              logDriver: awslogs
+              options:
+                awslogs-group: "/ecs/{{ server_container_name }}"
+                awslogs-region: "{{ region }}"
+                awslogs-stream-prefix: ecs
+        state: present
+      register: ecs_taskdefinition_result
+
+    - name: Create an ECS service
+      ecs_service:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        cluster: "{{ cluster_name }}"
+        name: "service-{{ server_name }}"
+        launch_type: FARGATE
+        task_definition: "{{ server_task_definition_name }}:{{ server_task_definition_revision }}"
+        desired_count: 1
+        load_balancers:
+          - targetGroupArn: "{{ server_target_group_arn }}"
+            containerName: "{{ server_container_name }}"
+            containerPort: "{{ app_port }}"
+        network_configuration:
+          assign_public_ip: true
+          security_groups:
+            - "{{ security_group_name }}"
+          subnets:
+            - "{{ subnet1_id }}"
+            - "{{ subnet2_id }}"
+        state: present
