@@ -23,3 +23,5 @@ out/
 ### Ansible ###
 *.retry
 ansible-playbook.log*
+
+venv
