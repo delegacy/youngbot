@@ -24,8 +24,8 @@
         revision: "{{ server_task_definition_revision }}"
         execution_role_arn: "{{ execution_role_arn }}"
         launch_type: FARGATE
-        cpu: 256
-        memory: 512
+        cpu: "256"
+        memory: "512"
         network_mode: awsvpc
         containers:
           - name: "{{ server_container_name }}"
@@ -60,6 +60,7 @@
         launch_type: FARGATE
         task_definition: "{{ server_task_definition_name }}:{{ server_task_definition_revision }}"
         desired_count: 1
+        force_new_deployment: true
         load_balancers:
           - targetGroupArn: "{{ server_target_group_arn }}"
             containerName: "{{ server_container_name }}"

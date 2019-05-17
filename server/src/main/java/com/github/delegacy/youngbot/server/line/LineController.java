@@ -10,6 +10,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ServerWebExchange;
 
 import com.github.delegacy.youngbot.server.RequestContext;
 import com.github.delegacy.youngbot.server.message.service.MessageService;
@@ -34,7 +35,8 @@ public class LineController {
     private final MessageService messageService;
 
     @PostMapping("/webhook")
-    public Mono<String> onWebhook(RequestEntity<String> req) {
+    public Mono<String> onWebhook(RequestEntity<String> req, ServerWebExchange exchange) {
+
         final List<String> signatures = req.getHeaders().get("X-Line-Signature");
         if (CollectionUtils.isEmpty(signatures)) {
             log.warn("No X-Line-Signature");
@@ -60,10 +62,9 @@ public class LineController {
 
             final TextMessageContent textMessageContent = (TextMessageContent) messageContent;
 
-            final RequestContext ctx = new RequestContext();
-            ctx.platform(Platform.LINE);
-            ctx.text(textMessageContent.getText());
-            ctx.replyTo(messageEvent.getReplyToken());
+            final RequestContext ctx = new RequestContext(Platform.LINE, exchange,
+                                                          textMessageContent.getText(),
+                                                          messageEvent.getReplyToken());
 
             messageService.process(ctx, textMessageContent.getText());
         });
