@@ -1,5 +1,6 @@
 package com.github.delegacy.youngbot.server.message.handler;
 
+import static com.github.delegacy.youngbot.server.RequestContextTestUtils.newRequestContext;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.regex.Matcher;
@@ -19,7 +20,7 @@ class PingMessageHandlerTest {
     void testMatched(String input) {
         final Matcher matcher = handler.pattern().matcher(input);
         assertThat(matcher.matches()).isEqualTo(true);
-        StepVerifier.create(handler.process(new RequestContext(), input, matcher))
+        StepVerifier.create(handler.process(newRequestContext(input), input, matcher))
                     .expectNext("PONG")
                     .expectComplete()
                     .verify();

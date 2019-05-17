@@ -7,6 +7,7 @@ import org.springframework.http.RequestEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ServerWebExchange;
 
 import com.github.delegacy.youngbot.server.RequestContext;
 import com.github.delegacy.youngbot.server.message.service.MessageService;
@@ -29,7 +30,8 @@ public class SlackController {
     private final MessageService messageService;
 
     @PostMapping("/event")
-    public Mono<String> onEvent(RequestEntity<String> req) {
+    public Mono<String> onEvent(RequestEntity<String> req, ServerWebExchange exchange) {
+
         final String reqBody = req.getBody();
         log.debug("Received Slack event;reqBody<{}>", reqBody);
 
@@ -43,10 +45,9 @@ public class SlackController {
                     if (slackEvent instanceof SlackEventMessage) {
                         final SlackEventMessage slackEventMessage = (SlackEventMessage) slackEvent;
 
-                        final RequestContext ctx = new RequestContext();
-                        ctx.platform(Platform.SLACK);
-                        ctx.text(slackEventMessage.getText());
-                        ctx.replyTo(slackEventMessage.getChannelId());
+                        final RequestContext ctx = new RequestContext(Platform.SLACK, exchange,
+                                                                      slackEventMessage.getText(),
+                                                                      slackEventMessage.getChannelId());
 
                         messageService.process(ctx, slackEventMessage.getText());
                     } else {
