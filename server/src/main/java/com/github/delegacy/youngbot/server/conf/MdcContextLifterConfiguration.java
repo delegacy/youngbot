@@ -1,5 +1,6 @@
 package com.github.delegacy.youngbot.server.conf;
 
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -8,6 +9,8 @@ import javax.annotation.PreDestroy;
 import org.reactivestreams.Subscription;
 import org.slf4j.MDC;
 import org.springframework.context.annotation.Configuration;
+
+import com.github.delegacy.youngbot.server.ReactorContextFilter;
 
 import lombok.RequiredArgsConstructor;
 import reactor.core.CoreSubscriber;
@@ -18,6 +21,8 @@ import reactor.util.context.Context;
 @Configuration
 public class MdcContextLifterConfiguration {
     private static final String MDC_CONTEXT_REACTOR_KEY = MdcContextLifterConfiguration.class.getName();
+
+    private static final Set<String> ALLOWED_MDC_KEYS = Set.of(ReactorContextFilter.REQUEST_ID_KEY);
 
     @PostConstruct
     private void init() {
@@ -66,6 +71,7 @@ public class MdcContextLifterConfiguration {
                 MDC.clear();
             } else {
                 MDC.setContextMap(context.stream()
+                                         .filter(e -> ALLOWED_MDC_KEYS.contains(e.getKey()))
                                          .collect(Collectors.toMap(e -> e.getKey().toString(),
                                                                    e -> e.getValue().toString())));
             }

@@ -17,8 +17,7 @@ public class ReactorContextFilter implements WebFilter {
     private static final Random RANDOM = new Random();
 
     public static final String REACTOR_CONTEXT_KEY = "REACTOR_CONTEXT";
-
-    private static final String REQUEST_ID_KEY = "REQUEST_ID";
+    public static final String REQUEST_ID_KEY = "REQUEST_ID";
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
