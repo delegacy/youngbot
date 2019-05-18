@@ -21,7 +21,7 @@ server_name: "{{ app_name }}-server"
 server_target_group_name: "tg-{{ server_name }}"
 server_target_group_arn: 'arn:aws:elasticloadbalancing:ap-northeast-2:601390769788:targetgroup/tg-young-bot-server/71cdc1c66c9e0371'
 server_task_definition_name: "td-{{ server_name }}"
-server_task_definition_revision: 12
+server_task_definition_revision: 13
 server_container_name: "container-{{ server_name }}"
 task_execution_role_name: "task-execution-role-{{ app_name }}"
 execution_role_arn: 'arn:aws:iam::601390769788:role/task-execution-role-young-bot'

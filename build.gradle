@@ -94,6 +94,10 @@ subprojects {
             // Logging
             dependency 'ch.qos.logback:logback-classic:1.2.3'
             dependency 'org.slf4j:log4j-over-slf4j:1.7.26'
+            dependencySet(group:'ch.qos.logback.contrib', version: '0.1.5') {
+                entry 'logback-json-classic'
+                entry 'logback-jackson'
+            }
 
             // Test
             dependencySet(group:'org.junit.jupiter', version: '5.4.2') {
