@@ -31,9 +31,8 @@ public class SlackController {
 
     @PostMapping("/event")
     public Mono<String> onEvent(RequestEntity<String> req, ServerWebExchange exchange) {
-
         final String reqBody = req.getBody();
-        log.debug("Received Slack event;reqBody<{}>", reqBody);
+        log.debug("Received a Slack event;reqBody<{}>", reqBody);
 
         final Object deserialized = deserializeEvent(reqBody);
         if (deserialized instanceof SlackEventWrapperIF) {
