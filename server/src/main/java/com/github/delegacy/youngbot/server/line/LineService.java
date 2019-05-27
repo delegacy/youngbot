@@ -15,11 +15,10 @@ import com.github.delegacy.youngbot.server.platform.PlatformRpcException;
 import com.github.delegacy.youngbot.server.platform.PlatformService;
 
 import com.linecorp.armeria.client.HttpClient;
-import com.linecorp.armeria.common.AggregatedHttpMessage;
-import com.linecorp.armeria.common.HttpData;
+import com.linecorp.armeria.client.HttpClientBuilder;
 import com.linecorp.armeria.common.HttpHeaderNames;
-import com.linecorp.armeria.common.HttpHeaders;
 import com.linecorp.armeria.common.HttpMethod;
+import com.linecorp.armeria.common.HttpRequest;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.MediaType;
 import com.linecorp.bot.model.ReplyMessage;
@@ -32,7 +31,6 @@ import reactor.core.publisher.Mono;
 @Service
 public class LineService implements PlatformService {
     private final HttpClient lineClient;
-    private final String authorization;
 
     @Inject
     public LineService(@Value("${youngbot.line.client.base-uri}") String apiBaseUri,
@@ -41,8 +39,9 @@ public class LineService implements PlatformService {
         checkArgument(Strings.isNotEmpty(apiBaseUri), "empty apiBaseUri");
         checkArgument(Strings.isNotEmpty(channelToken), "empty channelToken");
 
-        lineClient = HttpClient.of(apiBaseUri);
-        authorization = "Bearer " + channelToken;
+        lineClient = new HttpClientBuilder(apiBaseUri)
+                .addHttpHeader(HttpHeaderNames.AUTHORIZATION, "Bearer " + channelToken)
+                .build();
     }
 
     @Override
@@ -58,12 +57,8 @@ public class LineService implements PlatformService {
 
         final ReplyMessage replyMessage = new ReplyMessage(replyToken, textMessage);
 
-        final AggregatedHttpMessage request =
-                AggregatedHttpMessage.of(HttpHeaders.of(HttpMethod.POST, "/v2/bot/message/reply")
-                                                    .set(HttpHeaderNames.AUTHORIZATION, authorization)
-                                                    .setObject(HttpHeaderNames.CONTENT_TYPE,
-                                                               MediaType.JSON_UTF_8),
-                                         HttpData.ofUtf8(serialize(replyMessage)));
+        final HttpRequest request = HttpRequest.of(HttpMethod.POST, "/v2/bot/message/reply",
+                                                   MediaType.JSON_UTF_8, serialize(replyMessage));
 
         return Mono.fromFuture(lineClient.execute(request).aggregate())
                    .map(aggregated -> {

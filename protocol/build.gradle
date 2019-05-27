@@ -1,8 +1,8 @@
 apply plugin: 'com.google.protobuf'
 
 ext {
-    protobufVersion = '3.6.1'
-    grpcVersion = '1.19.0'
+    protobufVersion = '3.7.1'
+    grpcVersion = '1.21.0'
 
     generatedFilesBaseDir = "$projectDir/src/generated"
 }

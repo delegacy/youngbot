@@ -18,11 +18,10 @@ import com.hubspot.slack.client.methods.params.chat.ChatPostMessageParams;
 import com.hubspot.slack.client.models.response.chat.ChatPostMessageResponse;
 
 import com.linecorp.armeria.client.HttpClient;
-import com.linecorp.armeria.common.AggregatedHttpMessage;
-import com.linecorp.armeria.common.HttpData;
+import com.linecorp.armeria.client.HttpClientBuilder;
 import com.linecorp.armeria.common.HttpHeaderNames;
-import com.linecorp.armeria.common.HttpHeaders;
 import com.linecorp.armeria.common.HttpMethod;
+import com.linecorp.armeria.common.HttpRequest;
 import com.linecorp.armeria.common.MediaType;
 
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +31,6 @@ import reactor.core.publisher.Mono;
 @Service
 public class SlackService implements PlatformService {
     private final HttpClient slackClient;
-    private final String authorization;
 
     @Inject
     public SlackService(@Value("${youngbot.slack.client.base-uri}") String slackClientBaseUri,
@@ -41,8 +39,9 @@ public class SlackService implements PlatformService {
         checkArgument(Strings.isNotEmpty(slackClientBaseUri), "empty slackClientBaseUri");
         checkArgument(Strings.isNotEmpty(botToken), "empty botToken");
 
-        slackClient = HttpClient.of(slackClientBaseUri);
-        authorization = "Bearer " + botToken;
+        slackClient = new HttpClientBuilder(slackClientBaseUri)
+                .addHttpHeader(HttpHeaderNames.AUTHORIZATION, "Bearer " + botToken)
+                .build();
     }
 
     @Override
@@ -58,12 +57,8 @@ public class SlackService implements PlatformService {
                                      .setText(text)
                                      .build();
 
-        final AggregatedHttpMessage request =
-                AggregatedHttpMessage.of(HttpHeaders.of(HttpMethod.POST, "/chat.postMessage")
-                                                    .set(HttpHeaderNames.AUTHORIZATION, authorization)
-                                                    .setObject(HttpHeaderNames.CONTENT_TYPE,
-                                                               MediaType.JSON_UTF_8),
-                                         HttpData.ofUtf8(serialize(chatPostMessageParams)));
+        final HttpRequest request = HttpRequest.of(HttpMethod.POST, "/chat.postMessage",
+                                                   MediaType.JSON_UTF_8, serialize(chatPostMessageParams));
 
         return Mono.fromFuture(slackClient.execute(request).aggregate())
                    .map(aggregated -> deserializeResponse(aggregated.content().toStringUtf8(),
