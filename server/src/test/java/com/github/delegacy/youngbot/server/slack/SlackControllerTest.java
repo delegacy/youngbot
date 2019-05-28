@@ -76,4 +76,14 @@ class SlackControllerTest {
 
         verify(messageService, never()).process(any(), any());
     }
+
+    @Test
+    void testInvalidRequestBody() throws Exception {
+        webClient.post().uri("/api/slack/v1/event")
+                 .body(BodyInserters.fromObject("{}"))
+                 .exchange()
+                 .expectStatus().is5xxServerError();
+
+        verify(messageService, never()).process(any(), any());
+    }
 }

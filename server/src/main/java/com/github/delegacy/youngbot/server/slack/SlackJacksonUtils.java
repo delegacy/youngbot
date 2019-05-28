@@ -2,6 +2,9 @@ package com.github.delegacy.youngbot.server.slack;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.delegacy.youngbot.server.util.JacksonUtils;
 import com.hubspot.slack.client.jackson.ObjectMapperUtils;
@@ -12,10 +15,9 @@ import com.hubspot.slack.client.models.response.SlackErrorResponse;
 import com.hubspot.slack.client.models.response.SlackErrorType;
 import com.hubspot.slack.client.models.response.SlackResponse;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 final class SlackJacksonUtils {
+    private static final Logger logger = LoggerFactory.getLogger(SlackJacksonUtils.class);
+
     private static final ObjectMapper OM = ObjectMapperUtils.mapper();
 
     static String serialize(Object obj) {
@@ -32,7 +34,7 @@ final class SlackJacksonUtils {
                 // do nothing
             }
 
-            log.warn("Failed to deserialize the str<{}>", str);
+            logger.warn("Failed to deserialize the str<{}>", str);
             throw new IllegalArgumentException("Failed to deserialize the str");
         }
     }
@@ -46,7 +48,7 @@ final class SlackJacksonUtils {
             try {
                 return OM.readValue(responseBody, SlackErrorResponse.class);
             } catch (IOException ex) {
-                log.warn("Failed to deserialize responseBody<{}>", responseBody, ex);
+                logger.warn("Failed to deserialize responseBody<{}>", responseBody, ex);
 
                 return SlackErrorResponse.builder()
                                          .setOk(false)
@@ -60,7 +62,5 @@ final class SlackJacksonUtils {
         }
     }
 
-    private SlackJacksonUtils() {
-        // do nothing
-    }
+    private SlackJacksonUtils() {}
 }

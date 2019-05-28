@@ -1,10 +1,14 @@
 package com.github.delegacy.youngbot.server.message.service;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.github.delegacy.youngbot.server.ReactorContextFilter;
@@ -13,19 +17,24 @@ import com.github.delegacy.youngbot.server.message.handler.MessageHandler;
 import com.github.delegacy.youngbot.server.message.handler.MessageHandlerManager;
 import com.github.delegacy.youngbot.server.platform.PlatformServiceManager;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 import reactor.util.context.Context;
 
-@Slf4j
-@RequiredArgsConstructor
 @Service
 public class MessageService {
+    private static final Logger logger = LoggerFactory.getLogger(MessageService.class);
+
     private final MessageHandlerManager messageHandlerManager;
 
     private final PlatformServiceManager platformServiceManager;
+
+    public MessageService(MessageHandlerManager messageHandlerManager,
+                          PlatformServiceManager platformServiceManager) {
+
+        this.messageHandlerManager = requireNonNull(messageHandlerManager, "messageHandlerManager");
+        this.platformServiceManager = requireNonNull(platformServiceManager, "platformServiceManager");
+    }
 
     public void process(RequestContext ctx, String message) {
         final Collection<MessageHandler> handlers = messageHandlerManager.handlers();
@@ -43,8 +52,8 @@ public class MessageService {
         Flux.concat(fluxes)
             .flatMap(response -> platformServiceManager.get(ctx.platform())
                                                        .replyMessage(ctx.replyTo(), response))
-            .doOnNext(ignored -> log.info("Succeeded to process;message<{}>", message))
-            .doOnError(t -> log.warn("Failed to process;message<{}>", message, t))
+            .doOnNext(ignored -> logger.info("Succeeded to process;message<{}>", message))
+            .doOnError(t -> logger.warn("Failed to process;message<{}>", message, t))
             .subscribeOn(Schedulers.elastic())
             .subscriberContext((Context) ctx.exchange()
                                             .getRequiredAttribute(ReactorContextFilter.REACTOR_CONTEXT_KEY))

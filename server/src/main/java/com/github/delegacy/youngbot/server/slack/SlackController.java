@@ -2,7 +2,10 @@ package com.github.delegacy.youngbot.server.slack;
 
 import static com.github.delegacy.youngbot.server.slack.SlackJacksonUtils.deserializeEvent;
 import static com.github.delegacy.youngbot.server.slack.SlackJacksonUtils.serialize;
+import static java.util.Objects.requireNonNull;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.RequestEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,44 +21,40 @@ import com.hubspot.slack.client.models.events.SlackEvent;
 import com.hubspot.slack.client.models.events.SlackEventMessage;
 import com.hubspot.slack.client.models.events.SlackEventWrapperIF;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
-@Slf4j
-@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/slack/v1")
 public class SlackController {
+    private static final Logger logger = LoggerFactory.getLogger(SlackController.class);
+
     private final MessageService messageService;
+
+    public SlackController(MessageService messageService) {
+        this.messageService = requireNonNull(messageService, "messageService");
+    }
 
     @PostMapping("/event")
     public Mono<String> onEvent(RequestEntity<String> req, ServerWebExchange exchange) {
         final String reqBody = req.getBody();
-        log.debug("Received a Slack event;reqBody<{}>", reqBody);
+        logger.debug("Received a Slack event;reqBody<{}>", reqBody);
 
         final Object deserialized = deserializeEvent(reqBody);
         if (deserialized instanceof SlackEventWrapperIF) {
             @SuppressWarnings("rawtypes")
             final SlackEventWrapperIF slackEventWrapper = (SlackEventWrapperIF) deserialized;
             final SlackEvent slackEvent = slackEventWrapper.getEvent();
-            switch (slackEvent.getType()) {
-                case MESSAGE:
-                    if (slackEvent instanceof SlackEventMessage) {
-                        final SlackEventMessage slackEventMessage = (SlackEventMessage) slackEvent;
+            if (slackEvent instanceof SlackEventMessage) {
+                final SlackEventMessage slackEventMessage = (SlackEventMessage) slackEvent;
 
-                        final RequestContext ctx = new RequestContext(Platform.SLACK, exchange,
-                                                                      slackEventMessage.getText(),
-                                                                      slackEventMessage.getChannelId());
+                final RequestContext ctx = new RequestContext(Platform.SLACK, exchange,
+                                                              slackEventMessage.getText(),
+                                                              slackEventMessage.getChannelId());
 
-                        messageService.process(ctx, slackEventMessage.getText());
-                    } else {
-                        log.debug("Unsupported slackEvent<{}>", slackEvent);
-                    }
-                    break;
-                default:
-                    // do nothing
+                messageService.process(ctx, slackEventMessage.getText());
+                logger.info("Processed a SlackEventMessage;ctx<{}>", ctx);
             }
+
             return Mono.just("");
         }
 
@@ -66,7 +65,6 @@ public class SlackController {
                                                         .build()));
         }
 
-        log.warn("Unsupported slackEvent<{}>", deserialized);
         return Mono.just("");
     }
 }

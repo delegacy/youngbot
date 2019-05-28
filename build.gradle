@@ -6,7 +6,6 @@ buildscript {
     dependencies {
         classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.8'
         classpath 'com.bmuschko:gradle-docker-plugin:4.9.0'
-        classpath 'io.franzbecker:gradle-lombok:3.0.0'
     }
 }
 
@@ -30,7 +29,6 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'jacoco'
     apply plugin: 'io.spring.dependency-management'
-    apply plugin: 'io.franzbecker.gradle-lombok'
 
     repositories {
         mavenCentral()
@@ -115,6 +113,8 @@ subprojects {
 
             // LINE
             dependency 'com.linecorp.bot:line-bot-model:2.6.0'
+
+            dependency 'org.apache.commons:commons-lang3:3.9'
         }
     }
 
@@ -129,6 +129,7 @@ subprojects {
         testRuntimeOnly 'org.junit.platform:junit-platform-commons'
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+        testImplementation 'com.linecorp.armeria:armeria-testing-junit'
         testImplementation 'io.projectreactor:reactor-test'
     }
 }

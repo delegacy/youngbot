@@ -7,11 +7,9 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 
-import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
 
-@Slf4j
 @Component
 public class ReactorContextFilter implements WebFilter {
     private static final Random RANDOM = new Random();

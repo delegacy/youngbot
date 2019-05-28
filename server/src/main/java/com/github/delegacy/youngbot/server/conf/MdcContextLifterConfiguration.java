@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Configuration;
 
 import com.github.delegacy.youngbot.server.ReactorContextFilter;
 
-import lombok.RequiredArgsConstructor;
 import reactor.core.CoreSubscriber;
 import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Operators;
@@ -24,6 +23,7 @@ public class MdcContextLifterConfiguration {
 
     private static final Set<String> ALLOWED_MDC_KEYS = Set.of(ReactorContextFilter.REQUEST_ID_KEY);
 
+    @SuppressWarnings("MethodMayBeStatic")
     @PostConstruct
     private void init() {
         Hooks.onEachOperator(MDC_CONTEXT_REACTOR_KEY,
@@ -31,14 +31,29 @@ public class MdcContextLifterConfiguration {
                                                     new MdcContextLifter<>(coreSubscriber)));
     }
 
+    @SuppressWarnings("MethodMayBeStatic")
     @PreDestroy
     private void close() {
         Hooks.resetOnEachOperator(MDC_CONTEXT_REACTOR_KEY);
     }
 
-    @RequiredArgsConstructor
-    private static class MdcContextLifter<T> implements CoreSubscriber<T> {
+    private static final class MdcContextLifter<T> implements CoreSubscriber<T> {
+        private static void copyToMdc(Context context) {
+            if (context.isEmpty()) {
+                MDC.clear();
+            } else {
+                MDC.setContextMap(context.stream()
+                                         .filter(e -> ALLOWED_MDC_KEYS.contains(e.getKey()))
+                                         .collect(Collectors.toMap(e -> e.getKey().toString(),
+                                                                   e -> e.getValue().toString())));
+            }
+        }
+
         private final CoreSubscriber<T> coreSubscriber;
+
+        private MdcContextLifter(CoreSubscriber<T> coreSubscriber) {
+            this.coreSubscriber = coreSubscriber;
+        }
 
         @Override
         public void onSubscribe(Subscription s) {
@@ -64,17 +79,6 @@ public class MdcContextLifterConfiguration {
         @Override
         public Context currentContext() {
             return coreSubscriber.currentContext();
-        }
-
-        private static void copyToMdc(Context context) {
-            if (context.isEmpty()) {
-                MDC.clear();
-            } else {
-                MDC.setContextMap(context.stream()
-                                         .filter(e -> ALLOWED_MDC_KEYS.contains(e.getKey()))
-                                         .collect(Collectors.toMap(e -> e.getKey().toString(),
-                                                                   e -> e.getValue().toString())));
-            }
         }
     }
 }

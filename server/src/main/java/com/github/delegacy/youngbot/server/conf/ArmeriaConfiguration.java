@@ -25,19 +25,14 @@ public class ArmeriaConfiguration {
 
     @Bean
     public ArmeriaServerConfigurator armeriaServerConfigurator() {
-        return builder -> {
-            builder.serviceUnder("/docs", new DocService());
-
-            builder.decorator(LoggingService.newDecorator());
-
-            builder.accessLogWriter(AccessLogWriter.combined(), false);
-
-            builder.service(
-                    new GrpcServiceBuilder().addService(helloService)
-                                            .supportedSerializationFormats(GrpcSerializationFormats.values())
-                                            .enableUnframedRequests(true)
-                                            .build());
-        };
+        return builder -> builder.service(
+                new GrpcServiceBuilder().addService(helloService)
+                                        .supportedSerializationFormats(GrpcSerializationFormats.values())
+                                        .enableUnframedRequests(true)
+                                        .build())
+                                 .serviceUnder("/docs", new DocService())
+                                 .decorator(LoggingService.newDecorator())
+                                 .accessLogWriter(AccessLogWriter.combined(), false);
     }
 
     @Bean
@@ -47,11 +42,8 @@ public class ArmeriaConfiguration {
 
     @Bean
     public ArmeriaClientConfigurator armeriaClientConfigurator(ClientFactory clientFactory) {
-        return builder -> {
-            final CircuitBreakerStrategy strategy = CircuitBreakerStrategy.onServerErrorStatus();
-            builder.decorator(new CircuitBreakerHttpClientBuilder(strategy).newDecorator());
-
-            builder.factory(clientFactory);
-        };
+        return builder -> builder.factory(clientFactory)
+                                 .decorator(new CircuitBreakerHttpClientBuilder(
+                                         CircuitBreakerStrategy.onServerErrorStatus()).newDecorator());
     }
 }

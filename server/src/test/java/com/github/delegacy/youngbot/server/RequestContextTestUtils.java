@@ -20,7 +20,5 @@ public final class RequestContextTestUtils {
 
     }
 
-    private RequestContextTestUtils() {
-        // do nothing
-    }
+    private RequestContextTestUtils() {}
 }

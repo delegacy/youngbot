@@ -3,9 +3,9 @@ package com.github.delegacy.youngbot.server.line;
 import static com.github.delegacy.youngbot.server.util.JacksonUtils.serialize;
 import static com.google.common.base.Preconditions.checkArgument;
 
-import javax.inject.Inject;
-
-import org.apache.logging.log4j.util.Strings;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -24,20 +24,19 @@ import com.linecorp.armeria.common.MediaType;
 import com.linecorp.bot.model.ReplyMessage;
 import com.linecorp.bot.model.message.TextMessage;
 
-import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
-@Slf4j
 @Service
 public class LineService implements PlatformService {
+    private static final Logger logger = LoggerFactory.getLogger(LineService.class);
+
     private final HttpClient lineClient;
 
-    @Inject
     public LineService(@Value("${youngbot.line.client.base-uri}") String apiBaseUri,
                        @Value("${youngbot.line.channel-token}") String channelToken) {
 
-        checkArgument(Strings.isNotEmpty(apiBaseUri), "empty apiBaseUri");
-        checkArgument(Strings.isNotEmpty(channelToken), "empty channelToken");
+        checkArgument(StringUtils.isNotEmpty(apiBaseUri), "empty apiBaseUri");
+        checkArgument(StringUtils.isNotEmpty(channelToken), "empty channelToken");
 
         lineClient = new HttpClientBuilder(apiBaseUri)
                 .addHttpHeader(HttpHeaderNames.AUTHORIZATION, "Bearer " + channelToken)
@@ -69,7 +68,7 @@ public class LineService implements PlatformService {
                                                           aggregated.status());
                        }
                    })
-                   .doOnNext(ignored -> log.info("Replied with replyToken<{}>", replyToken))
-                   .doOnError(t -> log.warn("Failed to reply with replyToken<{}>", replyToken, t));
+                   .doOnNext(ignored -> logger.info("Replied with replyToken<{}>", replyToken))
+                   .doOnError(t -> logger.warn("Failed to reply with replyToken<{}>", replyToken, t));
     }
 }
