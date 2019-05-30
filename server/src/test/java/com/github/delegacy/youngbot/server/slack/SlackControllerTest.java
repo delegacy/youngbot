@@ -19,10 +19,13 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 
 import com.github.delegacy.youngbot.server.RequestContext;
+import com.github.delegacy.youngbot.server.junit.TextFile;
+import com.github.delegacy.youngbot.server.junit.TextFileParameterResolver;
 import com.github.delegacy.youngbot.server.message.service.MessageService;
 import com.github.delegacy.youngbot.server.platform.Platform;
 
 @ExtendWith(SpringExtension.class)
+@ExtendWith(TextFileParameterResolver.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 class SlackControllerTest {
     @Resource
@@ -32,10 +35,9 @@ class SlackControllerTest {
     private MessageService messageService;
 
     @Test
-    void testSlackEventMessage() throws Exception {
+    void testSlackEventMessage(@TextFile("slackEventMessage.json") String json) {
         webClient.post().uri("/api/slack/v1/event")
-                 .body(BodyInserters.fromObject(
-                         "{\"token\":\"aToken\",\"team_id\":\"teamId\",\"api_app_id\":\"apiAppId\",\"event\":{\"client_msg_id\":\"6f5994aa-6155-46d8-babb-413b70d07d6d\",\"type\":\"message\",\"text\":\"ping\",\"user\":\"aUser\",\"ts\":\"1558965076.000200\",\"channel\":\"aChannel\",\"event_ts\":\"1558965076.000200\",\"channel_type\":\"im\"},\"type\":\"event_callback\",\"event_id\":\"EvK0HLQSP6\",\"event_time\":1558965076,\"authed_users\":[\"authedUser\"]}"))
+                 .body(BodyInserters.fromObject(json))
                  .exchange()
                  .expectStatus().isOk();
 
@@ -54,10 +56,9 @@ class SlackControllerTest {
     }
 
     @Test
-    void testSlackEventBotMessage() throws Exception {
+    void testSlackEventBotMessage(@TextFile("slackEventBotMessage.json") String json) {
         webClient.post().uri("/api/slack/v1/event")
-                 .body(BodyInserters.fromObject(
-                         "{\"token\":\"aToken\",\"team_id\":\"teamId\",\"api_app_id\":\"apiAppId\",\"event\":{\"type\":\"message\",\"subtype\":\"bot_message\",\"text\":\"PONG\",\"ts\":\"1558965077.000300\",\"username\":\"aUsername\",\"bot_id\":\"botId\",\"channel\":\"aChannel\",\"event_ts\":\"1558965077.000300\",\"channel_type\":\"im\"},\"type\":\"event_callback\",\"event_id\":\"EvK0HLRGAG\",\"event_time\":1558965077,\"authed_users\":[\"authedUser\"]}"))
+                 .body(BodyInserters.fromObject(json))
                  .exchange()
                  .expectStatus().isOk();
 
@@ -65,10 +66,9 @@ class SlackControllerTest {
     }
 
     @Test
-    void testChallengeEvent() throws Exception {
+    void testChallengeEvent(@TextFile("challengeEvent.json") String json) {
         webClient.post().uri("/api/slack/v1/event")
-                 .body(BodyInserters.fromObject(
-                         "{\"token\":\"token\",\"challenge\":\"3eZbrw1aBm2rZgRNFdxV2595E9CY3gmdALWMmHkvFXO7tYXAYM8P\",\"type\": \"url_verification\"}"))
+                 .body(BodyInserters.fromObject(json))
                  .exchange()
                  .expectStatus().isOk()
                  .expectBody(String.class)
@@ -78,7 +78,7 @@ class SlackControllerTest {
     }
 
     @Test
-    void testInvalidRequestBody() throws Exception {
+    void testInvalidRequestBody() {
         webClient.post().uri("/api/slack/v1/event")
                  .body(BodyInserters.fromObject("{}"))
                  .exchange()

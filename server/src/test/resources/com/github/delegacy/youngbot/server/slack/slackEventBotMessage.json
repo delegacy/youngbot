@@ -1,0 +1,20 @@
+{
+  "token": "aToken",
+  "team_id": "teamId",
+  "api_app_id": "apiAppId",
+  "event": {
+    "type": "message",
+    "subtype": "bot_message",
+    "text": "PONG",
+    "ts": "1558965077.000300",
+    "username": "aUsername",
+    "bot_id": "botId",
+    "channel": "aChannel",
+    "event_ts": "1558965077.000300",
+    "channel_type": "im"
+  },
+  "type": "event_callback",
+  "event_id": "EvK0HLRGAG",
+  "event_time": 1558965077,
+  "authed_users": [ "authedUser" ]
+}
