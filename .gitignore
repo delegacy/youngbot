@@ -1,17 +1,7 @@
+### Gradle ###
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
-gradle.properties
-
-generated/
-
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
 
 ### IntelliJ IDEA ###
 .idea
@@ -24,4 +14,8 @@ out/
 *.retry
 ansible-playbook.log*
 
-venv
+### Python ###
+venv/
+
+### Generated ###
+gen-src/

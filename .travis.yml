@@ -30,7 +30,7 @@ cache:
     - "$HOME/.gradle/caches/modules-2"
     - "$HOME/.gradle/caches/package-lists"
 script:
-  - "./gradlew --no-daemon --stacktrace --warning-mode=all check build sonarqube"
+  - "./gradlew --no-daemon --stacktrace --warning-mode=all -Pcoverage check build sonarqube"
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 before_deploy:
