@@ -1,4 +1,6 @@
 rootProject.name = 'young-bot'
 
-include 'protocol'
-include 'server'
+apply from: "${rootDir}/gradle/scripts/settings-flags.gradle"
+
+includeWithFlags ':protocol', 'java', 'no_aggregation'
+includeWithFlags ':server', 'java'

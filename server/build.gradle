@@ -2,18 +2,18 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'com.bmuschko.docker-remote-api'
 
 dependencies {
-    implementation project(':protocol')
+    compile project(':protocol')
 
-    implementation 'com.linecorp.armeria:armeria-spring-boot-webflux-starter'
-    implementation 'com.linecorp.armeria:armeria-grpc'
+    compile 'com.linecorp.armeria:armeria-spring-boot-webflux-starter'
+    compile 'com.linecorp.armeria:armeria-grpc'
 
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    compile 'org.springframework.boot:spring-boot-starter-actuator'
 
-    implementation 'com.hubspot.slack:slack-base'
+    compile 'com.hubspot.slack:slack-base'
 
-    implementation 'com.linecorp.bot:line-bot-model'
+    compile 'com.linecorp.bot:line-bot-model'
 
-    implementation 'org.apache.commons:commons-lang3'
+    compile 'org.apache.commons:commons-lang3'
 
     runtime 'ch.qos.logback:logback-classic'
     runtime 'org.slf4j:log4j-over-slf4j'
