@@ -1,5 +1,7 @@
 package com.github.delegacy.youngbot.server.platform;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
@@ -10,21 +12,21 @@ import javax.annotation.PostConstruct;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
-@RequiredArgsConstructor
+@SuppressWarnings("ClassWithOnlyPrivateConstructors")
 @Component
 public class PlatformServiceManager {
-    private Map<Platform, PlatformService> services = Collections.emptyMap();
+    private static final PlatformService NOOP = new NoopPlatformService();
 
     private final ApplicationContext applicationContext;
 
-    private static final PlatformService NOOP = new NoopPlatformService();
+    private Map<Platform, PlatformService> services = Collections.emptyMap();
+
+    private PlatformServiceManager(ApplicationContext applicationContext) {
+        this.applicationContext = requireNonNull(applicationContext, "applicationContext");
+    }
 
     @PostConstruct
-    public void init() {
+    private void init() {
         services = applicationContext.getBeansOfType(PlatformService.class)
                                      .values().stream()
                                      .collect(Collectors.toUnmodifiableMap(

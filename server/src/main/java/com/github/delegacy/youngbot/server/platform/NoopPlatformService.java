@@ -4,7 +4,7 @@ import com.github.delegacy.youngbot.server.TheVoid;
 
 import reactor.core.publisher.Mono;
 
-public class NoopPlatformService implements PlatformService {
+class NoopPlatformService implements PlatformService {
     @Override
     public Platform platform() {
         return Platform.UNKNOWN;

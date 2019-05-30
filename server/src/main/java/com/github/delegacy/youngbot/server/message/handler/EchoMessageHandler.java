@@ -10,12 +10,10 @@ import org.springframework.stereotype.Component;
 
 import com.github.delegacy.youngbot.server.RequestContext;
 
-import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 
-@Slf4j
 @Component
-public class EchoMessageHandler implements MessageHandler {
+class EchoMessageHandler implements MessageHandler {
     private static final Pattern PATTERN = Pattern.compile("^/?echo\\s+(.+)$",
                                                            CASE_INSENSITIVE | DOTALL);
 

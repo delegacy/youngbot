@@ -1,10 +1,12 @@
 package com.github.delegacy.youngbot.server.line;
 
-import static com.github.delegacy.youngbot.server.line.LineJacksonUtils.deserialize;
+import static java.util.Objects.requireNonNull;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.RequestEntity;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,31 +23,35 @@ import com.linecorp.bot.model.event.MessageEvent;
 import com.linecorp.bot.model.event.message.MessageContent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
-@Slf4j
-@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/line/v1")
 public class LineController {
+    private static final Logger logger = LoggerFactory.getLogger(LineController.class);
+
     private final LineSignatureValidator lineSignatureValidator;
 
     private final MessageService messageService;
 
+    public LineController(LineSignatureValidator lineSignatureValidator,
+                          MessageService messageService) {
+
+        this.lineSignatureValidator = requireNonNull(lineSignatureValidator, "lineSignatureValidator");
+        this.messageService = requireNonNull(messageService, "messageService");
+    }
+
     @PostMapping("/webhook")
     public Mono<String> onWebhook(RequestEntity<String> req, ServerWebExchange exchange) {
-
         final List<String> signatures = req.getHeaders().get("X-Line-Signature");
         if (CollectionUtils.isEmpty(signatures)) {
-            log.warn("No X-Line-Signature");
+            logger.warn("No X-Line-Signature");
             return Mono.just("");
         }
 
         final String signature = signatures.get(0);
         final String payload = req.getBody();
-        log.debug("Received LINE webhook;signature<{}>,payload<{}>", signature, payload);
+        logger.debug("Received LINE webhook;signature<{}>,payload<{}>", signature, payload);
 
         final CallbackRequest callbackRequest = parsePayload(signature, payload);
         callbackRequest.getEvents().forEach(event -> {
@@ -82,7 +88,7 @@ public class LineController {
             throw new IllegalArgumentException("Invalid signature");
         }
 
-        final CallbackRequest callbackRequest = deserialize(json, CallbackRequest.class);
+        final CallbackRequest callbackRequest = LineJacksonUtils.deserialize(json, CallbackRequest.class);
         if (callbackRequest == null || callbackRequest.getEvents() == null) {
             throw new IllegalArgumentException("Invalid content");
         }

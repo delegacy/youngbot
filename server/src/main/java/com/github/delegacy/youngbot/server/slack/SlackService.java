@@ -4,9 +4,9 @@ import static com.github.delegacy.youngbot.server.slack.SlackJacksonUtils.deseri
 import static com.github.delegacy.youngbot.server.slack.SlackJacksonUtils.serialize;
 import static com.google.common.base.Preconditions.checkArgument;
 
-import javax.inject.Inject;
-
-import org.apache.logging.log4j.util.Strings;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -24,20 +24,19 @@ import com.linecorp.armeria.common.HttpMethod;
 import com.linecorp.armeria.common.HttpRequest;
 import com.linecorp.armeria.common.MediaType;
 
-import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
-@Slf4j
 @Service
 public class SlackService implements PlatformService {
+    private static final Logger logger = LoggerFactory.getLogger(SlackService.class);
+
     private final HttpClient slackClient;
 
-    @Inject
     public SlackService(@Value("${youngbot.slack.client.base-uri}") String slackClientBaseUri,
                         @Value("${youngbot.slack.client.bot-token}") String botToken) {
 
-        checkArgument(Strings.isNotEmpty(slackClientBaseUri), "empty slackClientBaseUri");
-        checkArgument(Strings.isNotEmpty(botToken), "empty botToken");
+        checkArgument(StringUtils.isNotEmpty(slackClientBaseUri), "empty slackClientBaseUri");
+        checkArgument(StringUtils.isNotEmpty(botToken), "empty botToken");
 
         slackClient = new HttpClientBuilder(slackClientBaseUri)
                 .addHttpHeader(HttpHeaderNames.AUTHORIZATION, "Bearer " + botToken)
@@ -70,7 +69,7 @@ public class SlackService implements PlatformService {
                            throw new PlatformRpcException("Failed to reply to channel: " + response);
                        }
                    })
-                   .doOnNext(ignored -> log.info("Replied to channel<{}>", channel))
-                   .doOnError(t -> log.warn("Failed to reply to channel<{}>", channel, t));
+                   .doOnNext(ignored -> logger.info("Replied to channel<{}>", channel))
+                   .doOnError(t -> logger.warn("Failed to reply to channel<{}>", channel, t));
     }
 }

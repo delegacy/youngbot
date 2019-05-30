@@ -13,6 +13,8 @@ dependencies {
 
     implementation 'com.linecorp.bot:line-bot-model'
 
+    implementation 'org.apache.commons:commons-lang3'
+
     runtime 'ch.qos.logback:logback-classic'
     runtime 'org.slf4j:log4j-over-slf4j'
     runtime 'ch.qos.logback.contrib:logback-json-classic'

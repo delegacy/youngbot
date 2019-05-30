@@ -1,5 +1,7 @@
 package com.github.delegacy.youngbot.server.message.handler;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -10,16 +12,15 @@ import javax.annotation.PostConstruct;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
-@RequiredArgsConstructor
 @Component
 public class MessageHandlerManager {
     private List<MessageHandler> handlers = Collections.emptyList();
 
     private final ApplicationContext applicationContext;
+
+    public MessageHandlerManager(ApplicationContext applicationContext) {
+        this.applicationContext = requireNonNull(applicationContext, "applicationContext");
+    }
 
     @PostConstruct
     public void init() {

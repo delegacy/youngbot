@@ -9,12 +9,10 @@ import org.springframework.stereotype.Component;
 
 import com.github.delegacy.youngbot.server.RequestContext;
 
-import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 
-@Slf4j
 @Component
-public class PingMessageHandler implements MessageHandler {
+class PingMessageHandler implements MessageHandler {
     private static final Pattern PATTERN = Pattern.compile("^/?ping$", CASE_INSENSITIVE);
 
     private static final String PONG = "PONG";

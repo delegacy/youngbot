@@ -2,12 +2,14 @@ package com.github.delegacy.youngbot.server.util;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 public final class JacksonUtils {
+    private static final Logger logger = LoggerFactory.getLogger(JacksonUtils.class);
+
     private static final ObjectMapper OM = new ObjectMapper();
 
     public static String serialize(Object obj) {
@@ -18,7 +20,7 @@ public final class JacksonUtils {
         try {
             return om.writeValueAsString(obj);
         } catch (IOException e) {
-            log.warn("Failed to serialize the obj<{}> with om<{}>", obj, om, e);
+            logger.warn("Failed to serialize the obj<{}> with om<{}>", obj, om, e);
             throw new IllegalArgumentException("Failed to serialize the obj");
         }
     }
@@ -31,7 +33,7 @@ public final class JacksonUtils {
         try {
             return om.readValue(str, clazz);
         } catch (IOException e) {
-            log.warn("Failed to deserialize the str<{}> with om<{}>", str, om, e);
+            logger.warn("Failed to deserialize the str<{}> with om<{}>", str, om, e);
             throw new IllegalArgumentException("Failed to deserialize the str");
         }
     }
@@ -44,12 +46,10 @@ public final class JacksonUtils {
         try {
             return om.readValue(bytes, clazz);
         } catch (IOException e) {
-            log.warn("Failed to deserialize the bytes<{}> with om<{}>", bytes, om, e);
+            logger.warn("Failed to deserialize the bytes<{}> with om<{}>", bytes, om, e);
             throw new IllegalArgumentException("Failed to deserialize the bytes");
         }
     }
 
-    private JacksonUtils() {
-        // do nothing
-    }
+    private JacksonUtils() {}
 }
