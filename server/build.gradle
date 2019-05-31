@@ -47,8 +47,8 @@ import com.bmuschko.gradle.docker.tasks.image.*
 task dockerBuildImage(type: DockerBuildImage) {
     dependsOn dockerCopyDockerfile, dockerUnpackDependencies
     inputDir = file("$buildDir/docker")
-    buildArgs = ['DEPENDENCY': 'dependency']
-    tags = ['delegacy/young-bot-server:latest']
+    buildArgs.put('DEPENDENCY', 'dependency')
+    tags.add('delegacy/young-bot-server:latest')
 }
 
 task dockerPushImage(type: DockerPushImage) {

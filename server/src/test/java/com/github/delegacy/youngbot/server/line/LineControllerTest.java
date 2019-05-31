@@ -20,10 +20,13 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 
 import com.github.delegacy.youngbot.server.RequestContext;
+import com.github.delegacy.youngbot.server.junit.TextFile;
+import com.github.delegacy.youngbot.server.junit.TextFileParameterResolver;
 import com.github.delegacy.youngbot.server.message.service.MessageService;
 import com.github.delegacy.youngbot.server.platform.Platform;
 
 @ExtendWith(SpringExtension.class)
+@ExtendWith(TextFileParameterResolver.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 class LineControllerTest {
     @Resource
@@ -41,11 +44,10 @@ class LineControllerTest {
     }
 
     @Test
-    void testMessageEvent() {
+    void testMessageEvent(@TextFile("messageEvent.json") String json) {
         webClient.post().uri("/api/line/v1/webhook")
                  .header("X-Line-Signature", "aSignature")
-                 .body(BodyInserters.fromObject(
-                         "{\"events\":[{\"type\":\"message\",\"replyToken\":\"aReplyToken\",\"source\":{\"userId\":\"aUserId\",\"type\":\"user\"},\"timestamp\":1558967195625,\"message\":{\"type\":\"text\",\"id\":\"9939046655736\",\"text\":\"ping\"}}],\"destination\":\"aDestination\"}"))
+                 .body(BodyInserters.fromObject(json))
                  .exchange()
                  .expectStatus().isOk();
 
