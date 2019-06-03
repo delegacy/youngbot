@@ -5,9 +5,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import javax.annotation.Resource;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -24,6 +26,8 @@ import com.github.delegacy.youngbot.server.junit.TextFileParameterResolver;
 import com.github.delegacy.youngbot.server.message.service.MessageService;
 import com.github.delegacy.youngbot.server.platform.Platform;
 
+import reactor.core.publisher.Flux;
+
 @ExtendWith(SpringExtension.class)
 @ExtendWith(TextFileParameterResolver.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -34,6 +38,11 @@ class SlackControllerTest {
     @MockBean
     private MessageService messageService;
 
+    @BeforeEach
+    void beforeEach() {
+        when(messageService.process(any())).thenReturn(Flux.empty());
+    }
+
     @Test
     void testSlackEventMessage(@TextFile("slackEventMessage.json") String json) {
         webClient.post().uri("/api/slack/v1/event")
@@ -42,17 +51,13 @@ class SlackControllerTest {
                  .expectStatus().isOk();
 
         final ArgumentCaptor<RequestContext> reqCtxCaptor = ArgumentCaptor.forClass(RequestContext.class);
-        final ArgumentCaptor<String> textCaptor = ArgumentCaptor.forClass(String.class);
 
-        verify(messageService, times(1))
-                .process(reqCtxCaptor.capture(), textCaptor.capture());
+        verify(messageService, times(1)).process(reqCtxCaptor.capture());
 
         final RequestContext ctx = reqCtxCaptor.getValue();
-        final String text = textCaptor.getValue();
         assertThat(ctx.platform()).isEqualTo(Platform.SLACK);
         assertThat(ctx.replyTo()).isEqualTo("aChannel");
         assertThat(ctx.text()).isEqualTo("ping");
-        assertThat(text).isEqualTo("ping");
     }
 
     @Test
@@ -62,7 +67,7 @@ class SlackControllerTest {
                  .exchange()
                  .expectStatus().isOk();
 
-        verify(messageService, never()).process(any(), any());
+        verify(messageService, never()).process(any());
     }
 
     @Test
@@ -74,7 +79,7 @@ class SlackControllerTest {
                  .expectBody(String.class)
                  .isEqualTo("{\"challenge\":\"3eZbrw1aBm2rZgRNFdxV2595E9CY3gmdALWMmHkvFXO7tYXAYM8P\"}");
 
-        verify(messageService, never()).process(any(), any());
+        verify(messageService, never()).process(any());
     }
 
     @Test
@@ -84,6 +89,6 @@ class SlackControllerTest {
                  .exchange()
                  .expectStatus().is5xxServerError();
 
-        verify(messageService, never()).process(any(), any());
+        verify(messageService, never()).process(any());
     }
 }

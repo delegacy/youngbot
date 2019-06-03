@@ -23,7 +23,7 @@ class EchoMessageHandler implements MessageHandler {
     }
 
     @Override
-    public Flux<String> process(RequestContext ctx, String text, Matcher matcher) {
+    public Flux<String> process(RequestContext ctx, Matcher matcher) {
         return Flux.just(matcher.group(1));
     }
 }

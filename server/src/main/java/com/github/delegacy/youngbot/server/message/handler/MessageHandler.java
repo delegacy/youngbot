@@ -10,5 +10,5 @@ import reactor.core.publisher.Flux;
 public interface MessageHandler {
     Pattern pattern();
 
-    Flux<String> process(RequestContext ctx, String text, Matcher matcher);
+    Flux<String> process(RequestContext ctx, Matcher matcher);
 }

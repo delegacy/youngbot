@@ -1,5 +1,6 @@
 package com.github.delegacy.youngbot.server.slack;
 
+import static com.github.delegacy.youngbot.server.ReactorContextFilter.REACTOR_CONTEXT_KEY;
 import static com.github.delegacy.youngbot.server.slack.SlackJacksonUtils.deserializeEvent;
 import static com.github.delegacy.youngbot.server.slack.SlackJacksonUtils.serialize;
 import static java.util.Objects.requireNonNull;
@@ -22,6 +23,8 @@ import com.hubspot.slack.client.models.events.SlackEventMessage;
 import com.hubspot.slack.client.models.events.SlackEventWrapperIF;
 
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+import reactor.util.context.Context;
 
 @RestController
 @RequestMapping("/api/slack/v1")
@@ -51,7 +54,11 @@ public class SlackController {
                                                               slackEventMessage.getText(),
                                                               slackEventMessage.getChannelId());
 
-                messageService.process(ctx, slackEventMessage.getText());
+                messageService.process(ctx)
+                              .subscribeOn(Schedulers.elastic())
+                              .subscriberContext((Context) exchange.getRequiredAttribute(REACTOR_CONTEXT_KEY))
+                              .subscribe();
+
                 logger.info("Processed a SlackEventMessage;ctx<{}>", ctx);
             }
 

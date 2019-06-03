@@ -25,6 +25,8 @@ import com.github.delegacy.youngbot.server.junit.TextFileParameterResolver;
 import com.github.delegacy.youngbot.server.message.service.MessageService;
 import com.github.delegacy.youngbot.server.platform.Platform;
 
+import reactor.core.publisher.Flux;
+
 @ExtendWith(SpringExtension.class)
 @ExtendWith(TextFileParameterResolver.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -41,6 +43,7 @@ class LineControllerTest {
     @BeforeEach
     void beforeEach() {
         when(lineSignatureValidator.validateSignature(any(), any())).thenReturn(true);
+        when(messageService.process(any())).thenReturn(Flux.empty());
     }
 
     @Test
@@ -52,16 +55,12 @@ class LineControllerTest {
                  .expectStatus().isOk();
 
         final ArgumentCaptor<RequestContext> reqCtxCaptor = ArgumentCaptor.forClass(RequestContext.class);
-        final ArgumentCaptor<String> textCaptor = ArgumentCaptor.forClass(String.class);
 
-        verify(messageService, times(1))
-                .process(reqCtxCaptor.capture(), textCaptor.capture());
+        verify(messageService, times(1)).process(reqCtxCaptor.capture());
 
         final RequestContext ctx = reqCtxCaptor.getValue();
-        final String text = textCaptor.getValue();
         assertThat(ctx.platform()).isEqualTo(Platform.LINE);
         assertThat(ctx.replyTo()).isEqualTo("aReplyToken");
         assertThat(ctx.text()).isEqualTo("ping");
-        assertThat(text).isEqualTo("ping");
     }
 }

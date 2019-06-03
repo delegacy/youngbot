@@ -1,5 +1,6 @@
 package com.github.delegacy.youngbot.server.line;
 
+import static com.github.delegacy.youngbot.server.ReactorContextFilter.REACTOR_CONTEXT_KEY;
 import static java.util.Objects.requireNonNull;
 
 import java.nio.charset.StandardCharsets;
@@ -24,6 +25,8 @@ import com.linecorp.bot.model.event.message.MessageContent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
 
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+import reactor.util.context.Context;
 
 @RestController
 @RequestMapping("/api/line/v1")
@@ -72,7 +75,10 @@ public class LineController {
                                                           textMessageContent.getText(),
                                                           messageEvent.getReplyToken());
 
-            messageService.process(ctx, textMessageContent.getText());
+            messageService.process(ctx)
+                          .subscribeOn(Schedulers.elastic())
+                          .subscriberContext((Context) exchange.getRequiredAttribute(REACTOR_CONTEXT_KEY))
+                          .subscribe();
         });
 
         return Mono.just("");
