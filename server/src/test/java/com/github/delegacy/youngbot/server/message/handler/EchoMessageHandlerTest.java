@@ -21,7 +21,7 @@ class EchoMessageHandlerTest {
     void testMatched(String input, String expected) {
         final Matcher matcher = handler.pattern().matcher(input);
         assertThat(matcher.matches()).isEqualTo(true);
-        StepVerifier.create(handler.process(newRequestContext(input), input, matcher))
+        StepVerifier.create(handler.process(newRequestContext(input), matcher))
                     .expectNext(expected)
                     .expectComplete()
                     .verify();

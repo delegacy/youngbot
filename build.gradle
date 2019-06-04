@@ -39,6 +39,7 @@ configure(projectsWithFlags('java')) {
 
         testCompile 'com.linecorp.armeria:armeria-testing-junit'
         testCompile 'io.projectreactor:reactor-test'
+        testCompile 'org.mockito:mockito-junit-jupiter'
     }
 
     test {
