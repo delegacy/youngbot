@@ -73,7 +73,8 @@ public class LineController {
 
             final RequestContext ctx = new RequestContext(Platform.LINE, exchange,
                                                           textMessageContent.getText(),
-                                                          messageEvent.getReplyToken());
+                                                          messageEvent.getReplyToken(),
+                                                          messageEvent.getSource().getSenderId());
 
             messageService.process(ctx)
                           .subscribeOn(Schedulers.elastic())

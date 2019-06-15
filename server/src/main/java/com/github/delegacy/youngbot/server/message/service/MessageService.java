@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.regex.Matcher;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -41,6 +42,7 @@ public class MessageService {
                        }
                        return handler.process(ctx, matcher);
                    })
+                   .filter(StringUtils::isNotEmpty)
                    .concatMap(response -> platformServiceManager.get(ctx.platform())
                                                                 .replyMessage(ctx.replyTo(), response))
                    .doOnNext(ignored -> logger.info("Succeeded to process;text<{}>", text))

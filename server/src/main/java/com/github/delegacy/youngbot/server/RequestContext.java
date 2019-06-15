@@ -16,13 +16,16 @@ public class RequestContext {
 
     private final String replyTo;
 
+    private final String channelId;
+
     public RequestContext(Platform platform, ServerWebExchange exchange,
-                          String text, String replyTo) {
+                          String text, String replyTo, String channelId) {
 
         this.platform = requireNonNull(platform, "platform");
         this.exchange = requireNonNull(exchange, "exchange");
         this.text = requireNonNull(text, "text");
         this.replyTo = requireNonNull(replyTo, "replyTo");
+        this.channelId = requireNonNull(channelId, "channelId");
     }
 
     public Platform platform() {
@@ -41,6 +44,10 @@ public class RequestContext {
         return replyTo;
     }
 
+    public String channelId() {
+        return channelId;
+    }
+
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
@@ -48,6 +55,7 @@ public class RequestContext {
                           .add("exchange", exchange)
                           .add("text", text)
                           .add("replyTo", replyTo)
+                          .add("channelId", channelId)
                           .toString();
     }
 }
