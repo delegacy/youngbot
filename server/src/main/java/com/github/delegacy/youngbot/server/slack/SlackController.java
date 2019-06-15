@@ -52,6 +52,7 @@ public class SlackController {
 
                 final RequestContext ctx = new RequestContext(Platform.SLACK, exchange,
                                                               slackEventMessage.getText(),
+                                                              slackEventMessage.getChannelId(),
                                                               slackEventMessage.getChannelId());
 
                 messageService.process(ctx)

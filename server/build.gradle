@@ -9,6 +9,11 @@ dependencies {
 
     compile 'org.springframework.boot:spring-boot-starter-actuator'
 
+    // Spring Data JPA
+    compile 'org.springframework.boot:spring-boot-starter-data-jpa'
+    compile 'com.h2database:h2'
+    runtime 'mysql:mysql-connector-java'
+
     compile 'com.hubspot.slack:slack-base'
 
     compile 'com.linecorp.bot:line-bot-model'

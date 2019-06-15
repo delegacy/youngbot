@@ -100,7 +100,7 @@ class MessageServiceTest {
         when(platformServiceManager.get(eq(Platform.LINE))).thenReturn(platformService);
 
         final RequestContext ctx = new RequestContext(Platform.LINE, exchange,
-                                                      "abc", "aReplyTo");
+                                                      "abc", "aReplyTo", "aChannelId");
         StepVerifier.create(messageService.process(ctx))
                     .expectNextCount(2)
                     .expectComplete()
@@ -118,7 +118,7 @@ class MessageServiceTest {
     @Test
     void testProcess_whenMessageHandlerThrows() {
         final RequestContext ctx = new RequestContext(Platform.LINE, exchange,
-                                                      "123", "aReplyTo");
+                                                      "123", "aReplyTo", "aChannelId");
         StepVerifier.create(messageService.process(ctx))
                     .expectError(IllegalStateException.class)
                     .verify();
@@ -136,7 +136,7 @@ class MessageServiceTest {
         when(platformServiceManager.get(eq(Platform.LINE))).thenReturn(platformService);
 
         final RequestContext ctx = new RequestContext(Platform.LINE, exchange,
-                                                      "abc", "aReplyTo");
+                                                      "abc", "aReplyTo", "aChannelId");
         StepVerifier.create(messageService.process(ctx))
                     .expectError(IllegalStateException.class)
                     .verify();

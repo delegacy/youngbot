@@ -8,15 +8,15 @@ import com.github.delegacy.youngbot.server.platform.Platform;
 
 public final class RequestContextTestUtils {
     public static RequestContext newRequestContext(String text) {
-        return newRequestContext(text, "replyTo");
+        return newRequestContext(text, "replyTo", "channelId");
     }
 
-    public static RequestContext newRequestContext(String text, String replyTo) {
+    public static RequestContext newRequestContext(String text, String replyTo, String channelId) {
         return new RequestContext(Platform.LINE,
                                   MockServerWebExchange.from(
                                           MockServerHttpRequest.method(HttpMethod.GET,
                                                                        "https://example.com")),
-                                  text, replyTo);
+                                  text, replyTo, channelId);
 
     }
 

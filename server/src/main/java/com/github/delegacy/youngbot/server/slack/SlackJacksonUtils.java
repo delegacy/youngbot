@@ -2,6 +2,8 @@ package com.github.delegacy.youngbot.server.slack;
 
 import java.io.IOException;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +26,12 @@ final class SlackJacksonUtils {
         return JacksonUtils.serialize(OM, obj);
     }
 
-    static Object deserializeEvent(String str) {
+    static Object deserializeEvent(@Nullable String str) {
+        if (str == null) {
+            logger.warn("Failed to deserialize null");
+            throw new IllegalArgumentException("Failed to deserialize null");
+        }
+
         try {
             return OM.readValue(str, SlackEventWrapper.class);
         } catch (IOException e) {
