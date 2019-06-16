@@ -16,11 +16,14 @@ import com.github.delegacy.youngbot.server.platform.PlatformService;
 
 import com.linecorp.armeria.client.HttpClient;
 import com.linecorp.armeria.client.HttpClientBuilder;
+import com.linecorp.armeria.client.logging.LoggingClient;
+import com.linecorp.armeria.client.metric.MetricCollectingClient;
 import com.linecorp.armeria.common.HttpHeaderNames;
 import com.linecorp.armeria.common.HttpMethod;
 import com.linecorp.armeria.common.HttpRequest;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.MediaType;
+import com.linecorp.armeria.spring.MeterIdPrefixFunctionFactory;
 import com.linecorp.bot.model.ReplyMessage;
 import com.linecorp.bot.model.message.TextMessage;
 
@@ -40,6 +43,9 @@ public class LineService implements PlatformService {
 
         lineClient = new HttpClientBuilder(apiBaseUri)
                 .addHttpHeader(HttpHeaderNames.AUTHORIZATION, "Bearer " + channelToken)
+                .decorator(LoggingClient.newDecorator())
+                .decorator(MetricCollectingClient.newDecorator(
+                        MeterIdPrefixFunctionFactory.DEFAULT.get("client", "line")))
                 .build();
     }
 
