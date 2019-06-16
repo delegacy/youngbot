@@ -55,7 +55,8 @@ class LineServiceTest {
     void testReplyMessage() {
         final LineService service = new LineService(server.uri("/"), DUMMY_TOKEN);
 
-        StepVerifier.create(service.replyMessage("aReplyToken", "aText"))
+        StepVerifier.create(service.replyMessage(new LineMessageContext("any", "aReplyToken", "aChannelId"),
+                                                 "aText"))
                     .expectNext(TheVoid.INSTANCE)
                     .verifyComplete();
     }

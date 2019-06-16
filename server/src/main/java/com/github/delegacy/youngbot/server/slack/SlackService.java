@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.github.delegacy.youngbot.server.message.MessageContext;
 import com.github.delegacy.youngbot.server.TheVoid;
 import com.github.delegacy.youngbot.server.platform.Platform;
 import com.github.delegacy.youngbot.server.platform.PlatformRpcException;
@@ -55,10 +56,14 @@ public class SlackService implements PlatformService {
     }
 
     @Override
-    public Mono<TheVoid> replyMessage(String channel, String text) {
+    public Mono<TheVoid> replyMessage(MessageContext msgCtx, String text) {
+        checkArgument(msgCtx instanceof SlackMessageContext, "incompatible msgCtx");
+
+        final String channelId = msgCtx.channelId();
+
         final ChatPostMessageParams chatPostMessageParams =
                 ChatPostMessageParams.builder()
-                                     .setChannelId(channel)
+                                     .setChannelId(channelId)
                                      .setText(text)
                                      .build();
 
@@ -75,7 +80,7 @@ public class SlackService implements PlatformService {
                            throw new PlatformRpcException("Failed to reply to channel: " + response);
                        }
                    })
-                   .doOnNext(ignored -> logger.info("Replied to channel<{}>", channel))
-                   .doOnError(t -> logger.warn("Failed to reply to channel<{}>", channel, t));
+                   .doOnNext(ignored -> logger.info("Replied to channelId<{}>", channelId))
+                   .doOnError(t -> logger.warn("Failed to reply to channelId<{}>", channelId, t));
     }
 }

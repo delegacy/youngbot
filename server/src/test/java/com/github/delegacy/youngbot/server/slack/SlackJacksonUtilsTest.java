@@ -6,8 +6,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import com.github.delegacy.youngbot.server.junit.TextFile;
-import com.github.delegacy.youngbot.server.junit.TextFileParameterResolver;
+import com.github.delegacy.youngbot.server.util.junit.TextFile;
+import com.github.delegacy.youngbot.server.util.junit.TextFileParameterResolver;
 import com.hubspot.slack.client.models.events.ChallengeEventIF;
 import com.hubspot.slack.client.models.events.SlackEvent;
 import com.hubspot.slack.client.models.events.SlackEventMessage;

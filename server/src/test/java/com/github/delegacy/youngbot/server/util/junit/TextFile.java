@@ -1,4 +1,4 @@
-package com.github.delegacy.youngbot.server.junit;
+package com.github.delegacy.youngbot.server.util.junit;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

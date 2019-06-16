@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.github.delegacy.youngbot.server.RequestContext;
+import com.github.delegacy.youngbot.server.message.MessageContext;
 import com.github.delegacy.youngbot.server.message.handler.todo.TodoCommand.CommandType;
 import com.github.delegacy.youngbot.server.platform.Platform;
 
@@ -38,20 +38,20 @@ class TodoService {
         this.repository = requireNonNull(repository, "repository");
     }
 
-    Mono<String> process(RequestContext ctx, TodoCommand todoCommand) {
+    Mono<String> process(MessageContext msgCtx, TodoCommand todoCommand) {
         switch (todoCommand.commandType()) {
             case ADD:
-                return processAdd(ctx, todoCommand.args());
+                return processAdd(msgCtx, todoCommand.args());
             case ADDTO:
-                return processAddTo(ctx, todoCommand.args());
+                return processAddTo(msgCtx, todoCommand.args());
             case DO:
-                return processDo(ctx, todoCommand.args());
+                return processDo(msgCtx, todoCommand.args());
             case LIST:
-                return processList(ctx, todoCommand.args());
+                return processList(msgCtx, todoCommand.args());
             case LISTALL:
-                return processListAll(ctx, todoCommand.args());
+                return processListAll(msgCtx, todoCommand.args());
             case ARCHIVE:
-                return processArchive(ctx);
+                return processArchive(msgCtx);
             case HELP:
                 return processHelp(todoCommand.args());
             default:
@@ -59,30 +59,30 @@ class TodoService {
         }
     }
 
-    private Mono<String> processAdd(RequestContext ctx, List<String> args) {
+    private Mono<String> processAdd(MessageContext msgCtx, List<String> args) {
         if (args.size() != 1) {
             return processHelp(Collections.singleton("add"));
         }
 
-        return internalProcessAddTo(ctx, MTodoTask.TODO_FILE, args.get(0));
+        return internalProcessAddTo(msgCtx, MTodoTask.TODO_FILE, args.get(0));
     }
 
-    private Mono<String> processAddTo(RequestContext ctx, List<String> args) {
+    private Mono<String> processAddTo(MessageContext msgCtx, List<String> args) {
         if (args.size() != 2) {
             return processHelp(Collections.singleton("addto"));
         }
 
-        return internalProcessAddTo(ctx, args.get(0), args.get(1));
+        return internalProcessAddTo(msgCtx, args.get(0), args.get(1));
     }
 
-    private Mono<String> internalProcessAddTo(RequestContext ctx, String dest, String text) {
+    private Mono<String> internalProcessAddTo(MessageContext msgCtx, String dest, String text) {
         final String file = StringUtils.stripEnd(dest.toUpperCase(Locale.ENGLISH), ".TXT");
         final TodoTask task = TodoTask.of(text);
         final String normalizedText = task.toString();
 
         final MTodoTask model = new MTodoTask();
-        model.setPlatform(ctx.platform());
-        model.setChannelId(ctx.channelId());
+        model.setPlatform(msgCtx.platform());
+        model.setChannelId(msgCtx.channelId());
         model.setText(normalizedText);
         model.setFile(file);
 
@@ -95,7 +95,7 @@ class TodoService {
                    });
     }
 
-    private Mono<String> processDo(RequestContext ctx, List<String> args) {
+    private Mono<String> processDo(MessageContext msgCtx, List<String> args) {
         final Set<Long> todoTaskIds = args.stream()
                                           .map(arg -> StringUtils.strip(arg, ","))
                                           .map(arg -> {
@@ -112,7 +112,7 @@ class TodoService {
             return processHelp(Collections.singleton("do"));
         }
 
-        return findModels(todoTaskIds, ctx.platform(), ctx.channelId(), MTodoTask.TODO_FILE)
+        return findModels(todoTaskIds, msgCtx.platform(), msgCtx.channelId(), MTodoTask.TODO_FILE)
                 .map(model -> model.setText(TodoTask.of(model.getText())
                                                     .markAsDone(LocalDate.now())
                                                     .toString()))
@@ -136,7 +136,7 @@ class TodoService {
 
                     return texts + '\n' + summaries;
                 })
-                .zipWith(processArchive(ctx), (s1, s2) -> s1 + '\n' + s2)
+                .zipWith(processArchive(msgCtx), (s1, s2) -> s1 + '\n' + s2)
                 .onErrorResume(t -> {
                     logger.warn("Failed to mark as done", t);
                     return Mono.just("Failed to mark as done");
@@ -158,9 +158,9 @@ class TodoService {
                    });
     }
 
-    private Mono<String> processList(RequestContext ctx, List<String> terms) {
-        return Mono.fromCallable(() -> repository.findByPlatformAndChannelIdAndFile(ctx.platform(),
-                                                                                    ctx.channelId(),
+    private Mono<String> processList(MessageContext msgCtx, List<String> terms) {
+        return Mono.fromCallable(() -> repository.findByPlatformAndChannelIdAndFile(msgCtx.platform(),
+                                                                                    msgCtx.channelId(),
                                                                                     MTodoTask.TODO_FILE))
                    .map(models -> respondTasks(models, terms))
                    .onErrorResume(t -> {
@@ -224,9 +224,9 @@ class TodoService {
         return sb.toString();
     }
 
-    private Mono<String> processListAll(RequestContext ctx, List<String> terms) {
+    private Mono<String> processListAll(MessageContext msgCtx, List<String> terms) {
         return Mono.fromCallable(() -> repository.findByPlatformAndChannelIdAndFileIn(
-                ctx.platform(), ctx.channelId(), Set.of(MTodoTask.TODO_FILE, MTodoTask.DONE_FILE)))
+                msgCtx.platform(), msgCtx.channelId(), Set.of(MTodoTask.TODO_FILE, MTodoTask.DONE_FILE)))
                    .map(models -> respondTasks(models, terms))
                    .onErrorResume(t -> {
                        logger.warn("Failed to list all tasks", t);
@@ -234,9 +234,9 @@ class TodoService {
                    });
     }
 
-    private Mono<String> processArchive(RequestContext ctx) {
-        return Mono.fromCallable(() -> repository.findByPlatformAndChannelIdAndFile(ctx.platform(),
-                                                                                    ctx.channelId(),
+    private Mono<String> processArchive(MessageContext msgCtx) {
+        return Mono.fromCallable(() -> repository.findByPlatformAndChannelIdAndFile(msgCtx.platform(),
+                                                                                    msgCtx.channelId(),
                                                                                     MTodoTask.TODO_FILE))
                    .flatMapMany(models -> {
                        final List<MTodoTask> filtered =

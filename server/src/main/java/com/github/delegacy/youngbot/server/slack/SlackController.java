@@ -2,27 +2,24 @@ package com.github.delegacy.youngbot.server.slack;
 
 import static com.github.delegacy.youngbot.server.ReactorContextFilter.REACTOR_CONTEXT_KEY;
 import static com.github.delegacy.youngbot.server.slack.SlackJacksonUtils.deserializeEvent;
-import static com.github.delegacy.youngbot.server.slack.SlackJacksonUtils.serialize;
 import static java.util.Objects.requireNonNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 
-import com.github.delegacy.youngbot.server.RequestContext;
+import com.github.delegacy.youngbot.server.message.MessageContext;
 import com.github.delegacy.youngbot.server.message.service.MessageService;
-import com.github.delegacy.youngbot.server.platform.Platform;
 import com.hubspot.slack.client.models.events.ChallengeEventIF;
-import com.hubspot.slack.client.models.events.ChallengeResponse;
 import com.hubspot.slack.client.models.events.SlackEvent;
 import com.hubspot.slack.client.models.events.SlackEventMessage;
 import com.hubspot.slack.client.models.events.SlackEventWrapperIF;
 
-import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.util.context.Context;
 
@@ -38,8 +35,8 @@ public class SlackController {
     }
 
     @PostMapping("/event")
-    public Mono<String> onEvent(RequestEntity<String> req, ServerWebExchange exchange) {
-        final String reqBody = req.getBody();
+    public ResponseEntity<String> onEvent(RequestEntity<String> req, ServerWebExchange exchange) {
+        final String reqBody = requireNonNull(req.getBody(), "reqBody");
         logger.debug("Received a Slack event;reqBody<{}>", reqBody);
 
         final Object deserialized = deserializeEvent(reqBody);
@@ -50,29 +47,21 @@ public class SlackController {
             if (slackEvent instanceof SlackEventMessage) {
                 final SlackEventMessage slackEventMessage = (SlackEventMessage) slackEvent;
 
-                final RequestContext ctx = new RequestContext(Platform.SLACK, exchange,
-                                                              slackEventMessage.getText(),
-                                                              slackEventMessage.getChannelId(),
-                                                              slackEventMessage.getChannelId());
+                final MessageContext msgCtx = new SlackMessageContext(slackEventMessage.getText(),
+                                                                      slackEventMessage.getChannelId());
 
-                messageService.process(ctx)
+                messageService.process(msgCtx)
                               .subscribeOn(Schedulers.elastic())
                               .subscriberContext((Context) exchange.getRequiredAttribute(REACTOR_CONTEXT_KEY))
                               .subscribe();
 
-                logger.info("Processed a SlackEventMessage;ctx<{}>", ctx);
+                logger.info("Processed a SlackEventMessage;msgCtx<{}>", msgCtx);
             }
-
-            return Mono.just("");
-        }
-
-        if (deserialized instanceof ChallengeEventIF) {
+        } else if (deserialized instanceof ChallengeEventIF) {
             final ChallengeEventIF challengeEvent = (ChallengeEventIF) deserialized;
-            return Mono.just(serialize(ChallengeResponse.builder()
-                                                        .setChallenge(challengeEvent.getChallenge())
-                                                        .build()));
+            return ResponseEntity.ok().body(challengeEvent.getChallenge());
         }
 
-        return Mono.just("");
+        return ResponseEntity.ok().build();
     }
 }

@@ -19,9 +19,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 
-import com.github.delegacy.youngbot.server.RequestContext;
-import com.github.delegacy.youngbot.server.junit.TextFile;
-import com.github.delegacy.youngbot.server.junit.TextFileParameterResolver;
+import com.github.delegacy.youngbot.server.util.junit.TextFile;
+import com.github.delegacy.youngbot.server.util.junit.TextFileParameterResolver;
 import com.github.delegacy.youngbot.server.message.service.MessageService;
 import com.github.delegacy.youngbot.server.platform.Platform;
 
@@ -54,13 +53,14 @@ class LineControllerTest {
                  .exchange()
                  .expectStatus().isOk();
 
-        final ArgumentCaptor<RequestContext> reqCtxCaptor = ArgumentCaptor.forClass(RequestContext.class);
+        final ArgumentCaptor<LineMessageContext> msgCtxCaptor =
+                ArgumentCaptor.forClass(LineMessageContext.class);
 
-        verify(messageService, times(1)).process(reqCtxCaptor.capture());
+        verify(messageService, times(1)).process(msgCtxCaptor.capture());
 
-        final RequestContext ctx = reqCtxCaptor.getValue();
-        assertThat(ctx.platform()).isEqualTo(Platform.LINE);
-        assertThat(ctx.replyTo()).isEqualTo("aReplyToken");
-        assertThat(ctx.text()).isEqualTo("ping");
+        final LineMessageContext msgCtx = msgCtxCaptor.getValue();
+        assertThat(msgCtx.platform()).isEqualTo(Platform.LINE);
+        assertThat(msgCtx.replyToken()).isEqualTo("aReplyToken");
+        assertThat(msgCtx.text()).isEqualTo("ping");
     }
 }

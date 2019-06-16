@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.github.delegacy.youngbot.server.RequestContext;
+import com.github.delegacy.youngbot.server.message.MessageContext;
 import com.github.delegacy.youngbot.server.TheVoid;
 import com.github.delegacy.youngbot.server.message.handler.MessageHandlerManager;
 import com.github.delegacy.youngbot.server.platform.PlatformServiceManager;
@@ -31,8 +31,8 @@ public class MessageService {
         this.platformServiceManager = requireNonNull(platformServiceManager, "platformServiceManager");
     }
 
-    public Flux<TheVoid> process(RequestContext ctx) {
-        final String text = ctx.text();
+    public Flux<TheVoid> process(MessageContext msgCtx) {
+        final String text = msgCtx.text();
 
         return Flux.fromIterable(messageHandlerManager.handlers())
                    .concatMap(handler -> {
@@ -40,12 +40,12 @@ public class MessageService {
                        if (!matcher.matches()) {
                            return Flux.empty();
                        }
-                       return handler.process(ctx, matcher);
+                       return handler.handle(msgCtx, matcher);
                    })
                    .filter(StringUtils::isNotEmpty)
-                   .concatMap(response -> platformServiceManager.get(ctx.platform())
-                                                                .replyMessage(ctx.replyTo(), response))
-                   .doOnNext(ignored -> logger.info("Succeeded to process;text<{}>", text))
-                   .doOnError(t -> logger.warn("Failed to process;text<{}>", text, t));
+                   .concatMap(response -> platformServiceManager.get(msgCtx.platform())
+                                                                .replyMessage(msgCtx, response))
+                   .doOnNext(ignored -> logger.info("Processed text<{}>", text))
+                   .doOnError(t -> logger.warn("Failed to process text<{}>", text, t));
     }
 }

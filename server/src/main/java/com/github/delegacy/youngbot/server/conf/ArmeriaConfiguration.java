@@ -5,7 +5,7 @@ import javax.annotation.Resource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.github.delegacy.youngbot.server.service.HelloService;
+import com.github.delegacy.youngbot.server.service.MessageRpcService;
 
 import com.linecorp.armeria.client.ClientFactory;
 import com.linecorp.armeria.client.circuitbreaker.CircuitBreakerHttpClientBuilder;
@@ -21,12 +21,12 @@ import com.linecorp.armeria.spring.web.reactive.ArmeriaClientConfigurator;
 @Configuration
 public class ArmeriaConfiguration {
     @Resource
-    private HelloService helloService;
+    private MessageRpcService messageRpcService;
 
     @Bean
     public ArmeriaServerConfigurator armeriaServerConfigurator() {
         return builder -> builder.service(
-                new GrpcServiceBuilder().addService(helloService)
+                new GrpcServiceBuilder().addService(messageRpcService)
                                         .supportedSerializationFormats(GrpcSerializationFormats.values())
                                         .enableUnframedRequests(true)
                                         .build())

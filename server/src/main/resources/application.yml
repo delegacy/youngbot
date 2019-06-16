@@ -27,7 +27,7 @@ spring:
 
 logging:
   level:
-    com.github.delegacy.youngbot.server: DEBUG
+    com.github.delegacy.youngbot.server: INFO
 
 cloud:
   aws:
