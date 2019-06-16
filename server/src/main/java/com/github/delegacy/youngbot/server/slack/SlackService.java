@@ -19,10 +19,13 @@ import com.hubspot.slack.client.models.response.chat.ChatPostMessageResponse;
 
 import com.linecorp.armeria.client.HttpClient;
 import com.linecorp.armeria.client.HttpClientBuilder;
+import com.linecorp.armeria.client.logging.LoggingClient;
+import com.linecorp.armeria.client.metric.MetricCollectingClient;
 import com.linecorp.armeria.common.HttpHeaderNames;
 import com.linecorp.armeria.common.HttpMethod;
 import com.linecorp.armeria.common.HttpRequest;
 import com.linecorp.armeria.common.MediaType;
+import com.linecorp.armeria.spring.MeterIdPrefixFunctionFactory;
 
 import reactor.core.publisher.Mono;
 
@@ -40,6 +43,9 @@ public class SlackService implements PlatformService {
 
         slackClient = new HttpClientBuilder(slackClientBaseUri)
                 .addHttpHeader(HttpHeaderNames.AUTHORIZATION, "Bearer " + botToken)
+                .decorator(LoggingClient.newDecorator())
+                .decorator(MetricCollectingClient.newDecorator(
+                        MeterIdPrefixFunctionFactory.DEFAULT.get("client", "slack")))
                 .build();
     }
 
