@@ -28,3 +28,21 @@ spring:
 logging:
   level:
     com.github.delegacy.youngbot.server: DEBUG
+
+cloud:
+  aws:
+    credentials:
+      useDefaultAwsCredentialsChain: true
+    region:
+      auto: false
+      static: ap-northeast-2
+    stack:
+      auto: false
+
+management:
+  metrics:
+    export:
+      cloudwatch:
+        enabled: false
+        namespace: young-bot
+        batchSize: 20
