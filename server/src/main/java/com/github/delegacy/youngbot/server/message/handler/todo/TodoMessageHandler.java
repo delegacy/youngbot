@@ -10,7 +10,7 @@ import javax.inject.Inject;
 
 import org.springframework.stereotype.Component;
 
-import com.github.delegacy.youngbot.server.RequestContext;
+import com.github.delegacy.youngbot.server.message.MessageContext;
 import com.github.delegacy.youngbot.server.message.handler.MessageHandler;
 
 import reactor.core.publisher.Flux;
@@ -33,10 +33,10 @@ class TodoMessageHandler implements MessageHandler {
     }
 
     @Override
-    public Flux<String> process(RequestContext ctx, Matcher matcher) {
+    public Flux<String> handle(MessageContext msgCtx, Matcher matcher) {
         final String args = matcher.group("args");
         final TodoCommand todoCommand = TodoCommand.of(args);
-        return todoService.process(ctx, todoCommand)
+        return todoService.process(msgCtx, todoCommand)
                           .flux();
     }
 }

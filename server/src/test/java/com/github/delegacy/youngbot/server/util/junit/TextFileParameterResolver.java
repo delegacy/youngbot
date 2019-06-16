@@ -1,4 +1,4 @@
-package com.github.delegacy.youngbot.server.junit;
+package com.github.delegacy.youngbot.server.util.junit;
 
 import java.io.IOException;
 import java.io.InputStream;

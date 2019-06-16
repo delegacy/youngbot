@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Component;
 
-import com.github.delegacy.youngbot.server.RequestContext;
+import com.github.delegacy.youngbot.server.message.MessageContext;
 
 import reactor.core.publisher.Flux;
 
@@ -23,7 +23,7 @@ class EchoMessageHandler implements MessageHandler {
     }
 
     @Override
-    public Flux<String> process(RequestContext ctx, Matcher matcher) {
+    public Flux<String> handle(MessageContext msgCtx, Matcher matcher) {
         return Flux.just(matcher.group(1));
     }
 }

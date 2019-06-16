@@ -20,9 +20,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 
-import com.github.delegacy.youngbot.server.RequestContext;
-import com.github.delegacy.youngbot.server.junit.TextFile;
-import com.github.delegacy.youngbot.server.junit.TextFileParameterResolver;
+import com.github.delegacy.youngbot.server.util.junit.TextFile;
+import com.github.delegacy.youngbot.server.util.junit.TextFileParameterResolver;
 import com.github.delegacy.youngbot.server.message.service.MessageService;
 import com.github.delegacy.youngbot.server.platform.Platform;
 
@@ -50,13 +49,14 @@ class SlackControllerTest {
                  .exchange()
                  .expectStatus().isOk();
 
-        final ArgumentCaptor<RequestContext> reqCtxCaptor = ArgumentCaptor.forClass(RequestContext.class);
+        final ArgumentCaptor<SlackMessageContext> msgCtxCaptor =
+                ArgumentCaptor.forClass(SlackMessageContext.class);
 
-        verify(messageService, times(1)).process(reqCtxCaptor.capture());
+        verify(messageService, times(1)).process(msgCtxCaptor.capture());
 
-        final RequestContext ctx = reqCtxCaptor.getValue();
+        final SlackMessageContext ctx = msgCtxCaptor.getValue();
         assertThat(ctx.platform()).isEqualTo(Platform.SLACK);
-        assertThat(ctx.replyTo()).isEqualTo("aChannel");
+        assertThat(ctx.channelId()).isEqualTo("aChannel");
         assertThat(ctx.text()).isEqualTo("ping");
     }
 
@@ -77,7 +77,7 @@ class SlackControllerTest {
                  .exchange()
                  .expectStatus().isOk()
                  .expectBody(String.class)
-                 .isEqualTo("{\"challenge\":\"3eZbrw1aBm2rZgRNFdxV2595E9CY3gmdALWMmHkvFXO7tYXAYM8P\"}");
+                 .isEqualTo("3eZbrw1aBm2rZgRNFdxV2595E9CY3gmdALWMmHkvFXO7tYXAYM8P");
 
         verify(messageService, never()).process(any());
     }

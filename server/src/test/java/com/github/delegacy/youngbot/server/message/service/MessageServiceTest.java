@@ -1,6 +1,7 @@
 package com.github.delegacy.youngbot.server.message.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -21,7 +22,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.server.ServerWebExchange;
 
-import com.github.delegacy.youngbot.server.RequestContext;
+import com.github.delegacy.youngbot.server.message.MessageContext;
+import com.github.delegacy.youngbot.server.util.MessageContextTestUtils;
 import com.github.delegacy.youngbot.server.TheVoid;
 import com.github.delegacy.youngbot.server.message.handler.MessageHandler;
 import com.github.delegacy.youngbot.server.message.handler.MessageHandlerManager;
@@ -42,7 +44,7 @@ class MessageServiceTest {
         }
 
         @Override
-        public Flux<String> process(RequestContext ctx, Matcher matcher) {
+        public Flux<String> handle(MessageContext ctx, Matcher matcher) {
             return Flux.error(new IllegalStateException("oops"));
         }
     }
@@ -54,7 +56,7 @@ class MessageServiceTest {
         }
 
         @Override
-        public Flux<String> process(RequestContext ctx, Matcher matcher) {
+        public Flux<String> handle(MessageContext ctx, Matcher matcher) {
             return Flux.just(matcher.group(0));
         }
     }
@@ -66,7 +68,7 @@ class MessageServiceTest {
         }
 
         @Override
-        public Flux<String> process(RequestContext ctx, Matcher matcher) {
+        public Flux<String> handle(MessageContext ctx, Matcher matcher) {
             return Flux.just(matcher.group(0).repeat(2));
         }
     }
@@ -96,57 +98,47 @@ class MessageServiceTest {
 
     @Test
     void testProcess() {
-        when(platformService.replyMessage(anyString(), anyString())).thenReturn(Mono.just(TheVoid.INSTANCE));
+        when(platformService.replyMessage(any(), anyString())).thenReturn(Mono.just(TheVoid.INSTANCE));
         when(platformServiceManager.get(eq(Platform.LINE))).thenReturn(platformService);
 
-        final RequestContext ctx = new RequestContext(Platform.LINE, exchange,
-                                                      "abc", "aReplyTo", "aChannelId");
-        StepVerifier.create(messageService.process(ctx))
+        final MessageContext msgCtx = MessageContextTestUtils.newMessageContext("abc");
+        StepVerifier.create(messageService.process(msgCtx))
                     .expectNextCount(2)
                     .expectComplete()
                     .verify();
 
-        final ArgumentCaptor<String> toCaptor = ArgumentCaptor.forClass(String.class);
         final ArgumentCaptor<String> textCaptor = ArgumentCaptor.forClass(String.class);
 
         verify(platformService, times(2))
-                .replyMessage(toCaptor.capture(), textCaptor.capture());
-        assertThat(toCaptor.getAllValues()).containsExactly("aReplyTo", "aReplyTo");
+                .replyMessage(eq(msgCtx), textCaptor.capture());
         assertThat(textCaptor.getAllValues()).containsExactly("abc", "abcabc");
     }
 
     @Test
     void testProcess_whenMessageHandlerThrows() {
-        final RequestContext ctx = new RequestContext(Platform.LINE, exchange,
-                                                      "123", "aReplyTo", "aChannelId");
-        StepVerifier.create(messageService.process(ctx))
+        final MessageContext msgCtx = MessageContextTestUtils.newMessageContext("123");
+        StepVerifier.create(messageService.process(msgCtx))
                     .expectError(IllegalStateException.class)
                     .verify();
 
-        final ArgumentCaptor<String> toCaptor = ArgumentCaptor.forClass(String.class);
-        final ArgumentCaptor<String> textCaptor = ArgumentCaptor.forClass(String.class);
-
-        verify(platformService, never()).replyMessage(toCaptor.capture(), textCaptor.capture());
+        verify(platformService, never()).replyMessage(any(), anyString());
     }
 
     @Test
     void testProcess_whenPlatformServiceThrows() {
-        when(platformService.replyMessage(anyString(), anyString())).thenThrow(IllegalStateException.class)
-                                                                    .thenReturn(Mono.just(TheVoid.INSTANCE));
+        when(platformService.replyMessage(any(), anyString())).thenThrow(IllegalStateException.class)
+                                                              .thenReturn(Mono.just(TheVoid.INSTANCE));
         when(platformServiceManager.get(eq(Platform.LINE))).thenReturn(platformService);
 
-        final RequestContext ctx = new RequestContext(Platform.LINE, exchange,
-                                                      "abc", "aReplyTo", "aChannelId");
-        StepVerifier.create(messageService.process(ctx))
+        final MessageContext msgCtx = MessageContextTestUtils.newMessageContext("abc");
+        StepVerifier.create(messageService.process(msgCtx))
                     .expectError(IllegalStateException.class)
                     .verify();
 
-        final ArgumentCaptor<String> toCaptor = ArgumentCaptor.forClass(String.class);
         final ArgumentCaptor<String> textCaptor = ArgumentCaptor.forClass(String.class);
 
         verify(platformService, times(1))
-                .replyMessage(toCaptor.capture(), textCaptor.capture());
-        assertThat(toCaptor.getValue()).isEqualTo("aReplyTo");
+                .replyMessage(eq(msgCtx), textCaptor.capture());
         assertThat(textCaptor.getValue()).isEqualTo("abc");
     }
 }

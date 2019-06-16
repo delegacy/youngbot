@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.github.delegacy.youngbot.server.message.MessageContext;
 import com.github.delegacy.youngbot.server.TheVoid;
 import com.github.delegacy.youngbot.server.platform.Platform;
 import com.github.delegacy.youngbot.server.platform.PlatformRpcException;
@@ -55,7 +56,12 @@ public class LineService implements PlatformService {
     }
 
     @Override
-    public Mono<TheVoid> replyMessage(String replyToken, String text) {
+    public Mono<TheVoid> replyMessage(MessageContext msgCtx, String text) {
+        checkArgument(msgCtx instanceof LineMessageContext, "incompatible msgCtx");
+
+        final LineMessageContext lineMsgCtx = (LineMessageContext) msgCtx;
+        final String replyToken = lineMsgCtx.replyToken();
+
         final TextMessage textMessage = TextMessage.builder()
                                                    .text(text)
                                                    .build();

@@ -58,7 +58,7 @@ class SlackServiceTest {
     void testReplyMessage() {
         final SlackService service = new SlackService(server.uri("/"), DUMMY_TOKEN);
 
-        StepVerifier.create(service.replyMessage("aChannel", "aText"))
+        StepVerifier.create(service.replyMessage(new SlackMessageContext("any", "aChannel"), "aText"))
                     .expectNext(TheVoid.INSTANCE)
                     .verifyComplete();
     }
