@@ -43,6 +43,12 @@
                 value: "{{ youngbot_line_channel_token }}"
               - name: YOUNGBOT_SLACK_CLIENT_BOTTOKEN
                 value: "{{ youngbot_slack_client_bot_token }}"
+              - name: AWS_ACCESS_KEY_ID
+                value: "{{ youngbot_aws_access_key }}"
+              - name: AWS_SECRET_ACCESS_KEY
+                value: "{{ youngbot_aws_secret_key }}"
+              - name: MANAGEMENT_METRICS_EXPORT_CLOUDWATCH_ENABLED
+                value: true
             logConfiguration:
               logDriver: awslogs
               options:

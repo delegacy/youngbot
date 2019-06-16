@@ -20,6 +20,10 @@ dependencies {
 
     compile 'org.apache.commons:commons-lang3'
 
+    // AWS
+    compile 'org.springframework.cloud:spring-cloud-aws-actuator'
+    compile 'org.springframework.cloud:spring-cloud-starter-aws'
+
     runtime 'ch.qos.logback:logback-classic'
     runtime 'org.slf4j:log4j-over-slf4j'
     runtime 'ch.qos.logback.contrib:logback-json-classic'
