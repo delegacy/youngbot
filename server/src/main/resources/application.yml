@@ -39,7 +39,11 @@ cloud:
     stack:
       auto: false
 
+
 management:
+  health:
+    db:
+      enabled: false
   metrics:
     export:
       cloudwatch:
