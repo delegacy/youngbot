@@ -1,10 +1,10 @@
 boms:
   - org.springframework.boot:spring-boot-dependencies:2.1.5.RELEASE
-  - com.linecorp.armeria:armeria-bom:0.86.0
+  - com.linecorp.armeria:armeria-bom:0.87.0
 
 com.linecorp.bot:
   line-bot-model:
-    version: '2.6.0'
+    version: '2.6.1'
 
 com.hubspot.slack:
   slack-base:
@@ -20,17 +20,17 @@ javax.annotation:
 
 com.google.protobuf:
   protoc:
-    version: '3.7.1'
+    version: &PROTOBUF_VERSION '3.8.0'
   protobuf-java:
-    version: &PROTOBUF_VERSION '3.7.1'
+    version: *PROTOBUF_VERSION
   protobuf-java-util:
     version: *PROTOBUF_VERSION
   protobuf-gradle-plugin:
-    version: '0.8.8'
+    version: '0.8.9'
 
 io.grpc:
   grpc-core:
-    version: &GRPC_VERSION '1.20.0'
+    version: &GRPC_VERSION '1.21.0'
   grpc-protobuf:
     version: *GRPC_VERSION
   grpc-stub:
