@@ -1,15 +1,15 @@
 boms:
-  - org.springframework.boot:spring-boot-dependencies:2.1.5.RELEASE
+  - org.springframework.boot:spring-boot-dependencies:2.1.8.RELEASE
   - org.springframework.cloud:spring-cloud-dependencies:Greenwich.RELEASE
-  - com.linecorp.armeria:armeria-bom:0.87.0
+  - com.linecorp.armeria:armeria-bom:0.92.0
 
 com.linecorp.bot:
   line-bot-model:
-    version: '2.6.1'
+    version: '3.0.0'
 
 com.hubspot.slack:
   slack-base:
-    version: '1.1'
+    version: '1.3'
 
 org.apache.commons:
   commons-lang3:
@@ -21,17 +21,17 @@ javax.annotation:
 
 com.google.protobuf:
   protoc:
-    version: &PROTOBUF_VERSION '3.8.0'
+    version: &PROTOBUF_VERSION '3.10.0'
   protobuf-java:
     version: *PROTOBUF_VERSION
   protobuf-java-util:
     version: *PROTOBUF_VERSION
   protobuf-gradle-plugin:
-    version: '0.8.9'
+    version: '0.8.10'
 
 io.grpc:
   grpc-core:
-    version: &GRPC_VERSION '1.21.0'
+    version: &GRPC_VERSION '1.23.0'
   grpc-protobuf:
     version: *GRPC_VERSION
   grpc-stub:
@@ -43,7 +43,7 @@ ch.qos.logback:
 
 org.slf4j:
   log4j-over-slf4j:
-    version: '1.7.26'
+    version: '1.7.28'
 
 ch.qos.logback.contrib:
   logback-json-classic:
@@ -53,7 +53,7 @@ ch.qos.logback.contrib:
 
 org.junit.jupiter:
   junit-jupiter-api:
-    version: &JUNIT_JUPITER_VERSION '5.4.2'
+    version: &JUNIT_JUPITER_VERSION '5.5.2'
   junit-jupiter-params:
     version: *JUNIT_JUPITER_VERSION
   junit-jupiter-engine:
@@ -61,6 +61,8 @@ org.junit.jupiter:
 
 org.junit.platform:
   junit-platform-commons:
-    version: &JUNIT_PLATFORM_VERSION '1.4.2'
+    version: &JUNIT_PLATFORM_VERSION '1.5.2'
   junit-platform-launcher:
+    version: *JUNIT_PLATFORM_VERSION
+  junit-platform-engine:
     version: *JUNIT_PLATFORM_VERSION

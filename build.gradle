@@ -6,12 +6,12 @@ buildscript {
     dependencies {
         classpath 'com.google.gradle:osdetector-gradle-plugin:1.6.2'
         classpath 'io.spring.gradle:dependency-management-plugin:1.0.8.RELEASE'
-        classpath 'com.bmuschko:gradle-docker-plugin:4.10.0'
+        classpath 'com.bmuschko:gradle-docker-plugin:5.1.0'
     }
 }
 
 plugins {
-    id 'org.springframework.boot' version '2.1.5.RELEASE' apply false
+    id 'org.springframework.boot' version '2.1.8.RELEASE' apply false
     id 'org.sonarqube' version '2.7.1'
 }
 
@@ -36,6 +36,7 @@ configure(projectsWithFlags('java')) {
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
         testRuntimeOnly 'org.junit.platform:junit-platform-commons'
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+        testRuntimeOnly 'org.junit.platform:junit-platform-engine'
 
         testCompile 'com.linecorp.armeria:armeria-testing-junit'
         testCompile 'io.projectreactor:reactor-test'
