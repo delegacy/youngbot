@@ -84,7 +84,7 @@ sensible defaults. By applying them, you can:
        }
        dependencies {
            classpath 'com.google.gradle:osdetector-gradle-plugin:1.6.2'
-           classpath 'io.spring.gradle:dependency-management-plugin:1.0.7.RELEASE'
+           classpath 'io.spring.gradle:dependency-management-plugin:1.0.8.RELEASE'
        }
    }
 
@@ -172,7 +172,7 @@ buildscript {
     }
     dependencies {
         classpath "com.google.gradle:osdetector-gradle-plugin:1.6.2"
-        classpath 'io.spring.gradle:dependency-management-plugin:1.0.7.RELEASE'
+        classpath 'io.spring.gradle:dependency-management-plugin:1.0.8.RELEASE'
     }
 }
 
@@ -311,6 +311,7 @@ automatically:
 - `publish` - Makes a project publish its artifact to a Maven repository
 - `bom` - Makes a project publish Maven BOM based on `dependencies.yml`
 - `shade`, `relocate` and `trim` - Makes a Java project produce an additional 'shaded' JAR
+- `reactor-grpc` or `rxgrpc` - Enables [`reactor-grpc`](https://github.com/salesforce/reactive-grpc/tree/master/reactor) or [`rxgrpc`](https://github.com/salesforce/reactive-grpc/tree/master/rx-java) support to the project
 
 We will learn what these flags exactly do in the following sections.
 
@@ -339,11 +340,11 @@ When a project has a `java` flag:
   - A special configuration property `checkstyleConfigDir` is set so you can
     access the external files such as `suppressions.xml` from `checkstyle.xml`.
   - You can choose Checkstyle version by specifying it in `dependencies.yml`:
-
     ```yaml
     com.puppycrawl.tools:
       checkstyle: { version: '8.5' }
     ```
+  - Checkstyle can be disabled completely by specifying `-PnoCheckstyle` option.
 
 - Test coverage report is enabled using `jacoco` plugin if `-Pcoverage` option
   is specified.
