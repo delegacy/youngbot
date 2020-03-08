@@ -15,10 +15,9 @@ import com.github.delegacy.youngbot.server.platform.Platform;
 import com.github.delegacy.youngbot.server.platform.PlatformRpcException;
 import com.github.delegacy.youngbot.server.platform.PlatformService;
 
-import com.linecorp.armeria.client.HttpClient;
-import com.linecorp.armeria.client.HttpClientBuilder;
 import com.linecorp.armeria.client.logging.LoggingClient;
 import com.linecorp.armeria.client.metric.MetricCollectingClient;
+import com.linecorp.armeria.client.WebClient;
 import com.linecorp.armeria.common.HttpHeaderNames;
 import com.linecorp.armeria.common.HttpMethod;
 import com.linecorp.armeria.common.HttpRequest;
@@ -34,7 +33,7 @@ import reactor.core.publisher.Mono;
 public class LineService implements PlatformService {
     private static final Logger logger = LoggerFactory.getLogger(LineService.class);
 
-    private final HttpClient lineClient;
+    private final WebClient lineClient;
 
     public LineService(@Value("${youngbot.line.client.base-uri}") String apiBaseUri,
                        @Value("${youngbot.line.channel-token}") String channelToken) {
@@ -42,7 +41,7 @@ public class LineService implements PlatformService {
         checkArgument(StringUtils.isNotEmpty(apiBaseUri), "empty apiBaseUri");
         checkArgument(StringUtils.isNotEmpty(channelToken), "empty channelToken");
 
-        lineClient = new HttpClientBuilder(apiBaseUri)
+        lineClient = WebClient.builder(apiBaseUri)
                 .addHttpHeader(HttpHeaderNames.AUTHORIZATION, "Bearer " + channelToken)
                 .decorator(LoggingClient.newDecorator())
                 .decorator(MetricCollectingClient.newDecorator(

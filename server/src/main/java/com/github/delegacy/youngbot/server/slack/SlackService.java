@@ -18,10 +18,9 @@ import com.github.delegacy.youngbot.server.platform.PlatformService;
 import com.hubspot.slack.client.methods.params.chat.ChatPostMessageParams;
 import com.hubspot.slack.client.models.response.chat.ChatPostMessageResponse;
 
-import com.linecorp.armeria.client.HttpClient;
-import com.linecorp.armeria.client.HttpClientBuilder;
 import com.linecorp.armeria.client.logging.LoggingClient;
 import com.linecorp.armeria.client.metric.MetricCollectingClient;
+import com.linecorp.armeria.client.WebClient;
 import com.linecorp.armeria.common.HttpHeaderNames;
 import com.linecorp.armeria.common.HttpMethod;
 import com.linecorp.armeria.common.HttpRequest;
@@ -34,7 +33,7 @@ import reactor.core.publisher.Mono;
 public class SlackService implements PlatformService {
     private static final Logger logger = LoggerFactory.getLogger(SlackService.class);
 
-    private final HttpClient slackClient;
+    private final WebClient slackClient;
 
     public SlackService(@Value("${youngbot.slack.client.base-uri}") String slackClientBaseUri,
                         @Value("${youngbot.slack.client.bot-token}") String botToken) {
@@ -42,7 +41,7 @@ public class SlackService implements PlatformService {
         checkArgument(StringUtils.isNotEmpty(slackClientBaseUri), "empty slackClientBaseUri");
         checkArgument(StringUtils.isNotEmpty(botToken), "empty botToken");
 
-        slackClient = new HttpClientBuilder(slackClientBaseUri)
+        slackClient = WebClient.builder(slackClientBaseUri)
                 .addHttpHeader(HttpHeaderNames.AUTHORIZATION, "Bearer " + botToken)
                 .decorator(LoggingClient.newDecorator())
                 .decorator(MetricCollectingClient.newDecorator(
