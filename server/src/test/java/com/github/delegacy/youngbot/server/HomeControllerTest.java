@@ -16,7 +16,7 @@ public class HomeControllerTest {
     private WebTestClient webClient;
 
     @Test
-    public void ok() throws Exception {
+    void ok() throws Exception {
         webClient.get().uri("/")
                  .exchange()
                  .expectStatus().isOk()
@@ -24,10 +24,17 @@ public class HomeControllerTest {
     }
 
     @Test
-    public void healthCheck() throws Exception {
+    void health() throws Exception {
         webClient.get().uri("/actuator/health")
                  .exchange()
                  .expectStatus().isOk()
                  .expectBody(String.class).isEqualTo("{\"status\":\"UP\"}");
+    }
+
+    @Test
+    void metrics() throws Exception {
+        webClient.get().uri("/internal/metrics")
+                 .exchange()
+                 .expectStatus().isOk();
     }
 }
