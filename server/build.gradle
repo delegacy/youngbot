@@ -2,8 +2,6 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'com.bmuschko.docker-remote-api'
 
 dependencies {
-    compile project(':protocol')
-
     compile 'com.linecorp.armeria:armeria-spring-boot-webflux-starter'
     compile 'com.linecorp.armeria:armeria-grpc'
 
@@ -21,10 +19,6 @@ dependencies {
     compile 'org.apache.commons:commons-lang3'
 
     compile 'io.micrometer:micrometer-registry-prometheus'
-
-    // AWS
-    compile 'org.springframework.cloud:spring-cloud-aws-actuator'
-    compile 'org.springframework.cloud:spring-cloud-starter-aws'
 
     runtime 'ch.qos.logback:logback-classic'
     runtime 'org.slf4j:log4j-over-slf4j'
