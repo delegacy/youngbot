@@ -8,12 +8,15 @@ notifications:
   email: false
   slack:
     rooms:
-      - secure: n7szQGsGAbxzZv/NSNvJQGPDwQPNqksAzLjmeViMmHX0malUW1DMkEObNpvNcrWRODJvAi+T6bYvw5cK0SzOa9rezYNVNVvZUgzdSvm9cBI0h8JJLvdk+y6hMLpy+za+6ZFEDjDyeOJNcnNdmtNj4gQXFTeHtcrk5Fqps2wUxnm3AtcNEznE1pidAlt3QBQ0FXiq0SEI5s6txSmMZCt4aFaa4Iqs/TA3aiCEkwLu8JdNbf5xlfoIQSQPB47vGWzIsd29OKaUyzGU80v8bGwLrHv4JrM6U52CFXwHYBwrAlx75p/kmv1S/8hBJ0Y0zIQYpppSJdx8L9w+iDbqmfdYu333kJdyaYhkFKMjyR+oFbjRCXlHtM+tb30BIbhH337/uma+cEKwDkPgI241R3J5b6B1l15E1xeaWiYg7V8sMUcmeXLtIwDO0PygRCP5NocNCGhG/Q8S0+IpWw/o1tT4uRb1HfruUp3pz3xVoiWE9SfjAgBX0VKciDa+a6oVHOytuZSwRWAi6H2LLyhDVOqt89EKyyEcJJshNNtioDCgW8OWhNRjFOk8h0tx+AZ+VDNPxDlBpNZceVZ2XNKh5bpEPnjfprKj0eqFwfoGy63g6MZ66Rj7a/Yc06J5zWtD9tnTAJyaelptyqwaS6ji+ngk8woSH5lgT+x4SflwF5i5R5Y=
-#addons:
-#  sonarcloud:
-#    organization: delegacy-github
-#    token:
-#      secure: eMXBgzmGwoYXnACqX3noOG2HvMOU9DdlWloOnTjP7VfUoLtxI199tVDfmL4oZm86qHQ6pqaLL7mYea4fHZ9oeI6MACwTgPKLZx3En3ERslYZQZ96dkJYT77itnFeGHQFs73CJ9rsTGFwgX+2i/SMyL8urmAekDN1/H3BL4KoCTo7ouMIgOrEnb13IJqwnEAN1FZffHk9cUXrOxRHdxRgTFXv7XYJq+PFxMaMP9mxbpxhi6qfr11taLnPccZHzijKap8E0m3Y8viHnOf1TZb2ftuT7oocO6O+Wqcq5Fmv2fjwBnE4V/4h81RT5Lo09m0V+UTgf50Hv3zx8mE1ketYBE6p1pawQEjOyd3RZH8h1t0vyH6NfYbKmbTfPb5hDJikiUpuzRPv86ksKi9eObgFZjmD3QaEsV4UdOKZjOm7nvtUD55lQUZE4CBOVc4+SCaYlzHkOCM2520Ps/JpHhj0weNBXt6nOy29DiJiLxb+QwI2cv77sQL1asFlA8/gJtitTuGcon2Fm8ucJF9XDHf/tdMJ2pntD4e2ytiEZ6DWsQdNWiOVw4bkpOW93Ete2AwKlWXuyV0Hv05HP9QTA7yFZAOhKvPzPdHNIGJjE42O9m2qtBmmrNsrsnyrr8Gz9pcWVJdqYFCWybMw4i1KCdE7oNDh1bx2Pbszf/EL6tbZbGw=
+      - secure: Rus2MDOt2Nlr6AfQ4ExCPGxEaKcQs4r1EC5qXxmjh+or1QXNu4pNUytunk78SFKlIrpQIRdzOt4tWPty1l7jh+61oW9dRcBQOO19eY/Qc3mm8w6CObxojSlaYsut8aIVPPe4mbSvDYMfqOQzQlFYAuPYDFYdvE816LK9hWVXowWVDhpA3uhhFzG3cm89hnvlvtD8DYLz+xSCKAAerTdUNP7G/O1fgrwpfU/VYq6xuEnFQYVT+hiS0Pjg/jPqCqGZua/7pwUOKNazB2XK9ERSrpaIxk/F2gEQhW9BAig1cRol9Dft5qkcapI9FYiScZK4UueRu0gnMfZmzoe9vcZrdFd5wh0TIGOdYLgQySzItWkCINNK5yRYKm4oJE5JTkZFAff3NptansmvCcNUJXG5axhbHuHjp2rr+32St8/P5BYZBXyO20mJN8X32JLgUuDYc72c6cjlM4LYwgrJnMUWjGCVGN7oI0SAjfOL0ymkfHvHnJF/wc4kIxmgH9RpfLUIXNXN0yBErkWKWLoxEq8rPpVayMxHbkwpFrcY6ev2otzJJSujwrMlnwPL/c+bWX8c/u+e+gygQ88U8LLqkf0ugEVlQz5ho4ouSVET8FrEryXsp3x1TdKAQnlOjnTGDbp387EX1SXlERLNiO9e1LaEzq5oCAMnbXlTngPNtSXNUbA=
+    on_success: change
+    on_failure: always
+    on_pull_requests: false
+addons:
+  sonarcloud:
+    organization: delegacy-github
+    token:
+      secure: eMXBgzmGwoYXnACqX3noOG2HvMOU9DdlWloOnTjP7VfUoLtxI199tVDfmL4oZm86qHQ6pqaLL7mYea4fHZ9oeI6MACwTgPKLZx3En3ERslYZQZ96dkJYT77itnFeGHQFs73CJ9rsTGFwgX+2i/SMyL8urmAekDN1/H3BL4KoCTo7ouMIgOrEnb13IJqwnEAN1FZffHk9cUXrOxRHdxRgTFXv7XYJq+PFxMaMP9mxbpxhi6qfr11taLnPccZHzijKap8E0m3Y8viHnOf1TZb2ftuT7oocO6O+Wqcq5Fmv2fjwBnE4V/4h81RT5Lo09m0V+UTgf50Hv3zx8mE1ketYBE6p1pawQEjOyd3RZH8h1t0vyH6NfYbKmbTfPb5hDJikiUpuzRPv86ksKi9eObgFZjmD3QaEsV4UdOKZjOm7nvtUD55lQUZE4CBOVc4+SCaYlzHkOCM2520Ps/JpHhj0weNBXt6nOy29DiJiLxb+QwI2cv77sQL1asFlA8/gJtitTuGcon2Fm8ucJF9XDHf/tdMJ2pntD4e2ytiEZ6DWsQdNWiOVw4bkpOW93Ete2AwKlWXuyV0Hv05HP9QTA7yFZAOhKvPzPdHNIGJjE42O9m2qtBmmrNsrsnyrr8Gz9pcWVJdqYFCWybMw4i1KCdE7oNDh1bx2Pbszf/EL6tbZbGw=
 env:
   global:
     - PATH=$HOME/.local/bin:$PATH
@@ -21,21 +24,19 @@ env:
     - secure: Z9Vx1jBYydfxzOmwLSfEZKSRwfXhg3rRcs0opmJ1LvCNXvwzlgJUW9/Y7paH3Aevo7/7a719W+9SDG9CDHnVP7+BCwFaTF8YG3LW0lcaRy8aQ6ONlnFfQaDYiv9yfHwVgcYcINSpMpyc9sXO1y/mx0EA9KqvRMql9HCjFwBrGotzw1VdeCAqpoZGhADfmcCJkxb7gn0Jzw5tzRIZ1MVFJEdMxv3FTPcawFfOWYxz6s1NIN4v86tGDMNezVjHzrRff0u5QNdpc8/Clgn8D1lzTKJPo9s8C7u1H9W9CflsNG4ZaCTYw9cMYvzgBeR/2UxFl5UMg/ppYlGMBzLSiGF0kjQCBwXuUSkpYdaZvxthkiNvN5mxRtKTeDKX8FsMzpxmpS3V2PrlUedTaZ4RHSNhwxPGk1huxISJhflU+D4lcoBvuLI/H/H0z1bTrBrF2b0yFJc61OUtSFydoMIjfr+NZ30w21xj5Ot2XQk/l+zejmFBlMUrm2TRf1nvaM1dRSrqABv8bHKe3yHBJaC37dlZPBlLNVaOlnrvK7zizgu8yWBhwwPkLwBQy+cEwPqWavsJtHJpH3mIH66ypzPX4003YXU2MLh9X1cBk3siKdvvzF81Lfy/lHSWhvnwjEjVZOyiUhj3gPUyZ+uBsGCqVRms+YXt9qd6C82cp31i+3KPXoA= # DOCKER_PASSWORD
     - secure: SIjGDC47SOOONLVk/A6nJHMY60yjVr1+Op2sldjyAUy+2sSZrAVbZ7Fv8KUPLE/BOwQfTRhtlG6swejacrUU64ggQAJzpFmugiq0jyEQd5CxvxgueE0hJ8S60wKcW3j+Udcwxe7kzvqTJz3+rmTV/U5S+ZZHaypbAiJNxcs/xLCfYtsEqnU2spiN8tXw8+WPYWY1W/t/Xa+9rh8WW2UCfqFPKsncfptTy0pzfSlmGb3fhI4n9fildbWju4WGbAkp7MxuY9Yuorj/rsFlyk3jwg1TlDPcsXMd/KSGp+pJoFeatSY4xxmNPe7ydZmTYZCj+gincu86XHosmVfbdRb2TmMCO/ZYYq11aaI6v4mVBmOjQQJaTujkJD0W0ASU2SbSUiTBTPuqe+nY9oGV3xeaPogOJNhKSl5mMh5RZklqZ7LcTYC0dsEL9V6ts1tgrXplfGklU1w3lY+CI3cNPKR4kVGh7FRpsyQW3Cx2N0LQPvduBX6OWfO5jJNt1n0ch7qAzfRd5tLJZO74SXWsF8bv4Hp1yUGNLZhByXwKml59zQwG6sMGTNTABbmlNHT4vdkhMJc8DMNQQWUH1H6N5sdOyGhqtuQn5Y55Ixrx9u0YSu0NIRmfzhwahRL/cfLG72Mdc68T8RGTTMMcN/pLyjSgqOKfUiQ9t/ydmolVTNs1b8M= # CODECOV_TOKEN
 before_cache:
-  - find $HOME/.gradle/caches -name '*.lock' -delete
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
-    - "$HOME/.gradle/wrapper/dists"
-    - "$HOME/.gradle/caches/jars-3"
-    - "$HOME/.gradle/caches/modules-2"
-    - "$HOME/.gradle/caches/package-lists"
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
 script:
-#  - "./gradlew --no-daemon --stacktrace --warning-mode=all -Pcoverage check build sonarqube"
-  - "./gradlew --no-daemon --stacktrace --warning-mode=all -Pcoverage check build"
+  - './gradlew --no-daemon --stacktrace --warning-mode=all -Pcoverage check build sonarqube'
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 deploy:
   skip_cleanup: true
   provider: script
-  script: "./gradlew dockerPushImage -x test"
+  script: './gradlew --no-daemon --stacktrace --warning-mode=all dockerPushImage -x test'
   on:
     branch: master

@@ -23,7 +23,7 @@ import com.linecorp.armeria.common.HttpMethod;
 import com.linecorp.armeria.common.HttpRequest;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.MediaType;
-import com.linecorp.armeria.spring.MeterIdPrefixFunctionFactory;
+import com.linecorp.armeria.common.metric.MeterIdPrefixFunction;
 import com.linecorp.bot.model.ReplyMessage;
 import com.linecorp.bot.model.message.TextMessage;
 
@@ -42,10 +42,10 @@ public class LineService implements PlatformService {
         checkArgument(StringUtils.isNotEmpty(channelToken), "empty channelToken");
 
         lineClient = WebClient.builder(apiBaseUri)
-                .addHttpHeader(HttpHeaderNames.AUTHORIZATION, "Bearer " + channelToken)
+                .addHeader(HttpHeaderNames.AUTHORIZATION, "Bearer " + channelToken)
                 .decorator(LoggingClient.newDecorator())
                 .decorator(MetricCollectingClient.newDecorator(
-                        MeterIdPrefixFunctionFactory.DEFAULT.get("client", "line")))
+                        MeterIdPrefixFunction.ofDefault("armeria.client").withTags("service", "line")))
                 .build();
     }
 

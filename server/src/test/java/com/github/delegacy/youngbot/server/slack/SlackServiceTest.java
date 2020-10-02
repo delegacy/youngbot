@@ -1,7 +1,5 @@
 package com.github.delegacy.youngbot.server.slack;
 
-import java.util.function.Function;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -13,11 +11,9 @@ import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.MediaType;
 import com.linecorp.armeria.server.AbstractHttpService;
-import com.linecorp.armeria.server.HttpService;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.ServiceRequestContext;
-import com.linecorp.armeria.server.SimpleDecoratingHttpService;
-import com.linecorp.armeria.testing.junit.server.ServerExtension;
+import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 
 import reactor.test.StepVerifier;
 
@@ -28,21 +24,16 @@ class SlackServiceTest {
     static final ServerExtension server = new ServerExtension() {
         @Override
         protected void configure(ServerBuilder sb) throws Exception {
-            final Function<HttpService, HttpService> decorator =
-                    s -> new SimpleDecoratingHttpService(s) {
-                        @Override
-                        public HttpResponse serve(ServiceRequestContext ctx, HttpRequest req) throws Exception {
-                            final String authorization = req.headers().get(HttpHeaderNames.AUTHORIZATION);
+            sb.decorator((delegate, ctx, req) -> {
+                final String authorization = req.headers().get(HttpHeaderNames.AUTHORIZATION);
 
-                            if (!("Bearer " + DUMMY_TOKEN).equals(authorization)) {
-                                return HttpResponse.of(HttpStatus.OK, MediaType.JSON_UTF_8,
-                                                       "{\"ok\":false,\"error\":\"invalid_auth\"}");
-                            }
+                if (!("Bearer " + DUMMY_TOKEN).equals(authorization)) {
+                    return HttpResponse.of(HttpStatus.OK, MediaType.JSON_UTF_8,
+                                           "{\"ok\":false,\"error\":\"invalid_auth\"}");
+                }
 
-                            return delegate().serve(ctx, req);
-                        }
-                    };
-            sb.decorator(decorator);
+                return delegate.serve(ctx, req);
+            });
 
             sb.service("/chat.postMessage", new AbstractHttpService() {
                 @Override
@@ -56,7 +47,7 @@ class SlackServiceTest {
 
     @Test
     void testReplyMessage() {
-        final SlackService service = new SlackService(server.uri("/"), DUMMY_TOKEN);
+        final SlackService service = new SlackService(server.httpUri().toString(), DUMMY_TOKEN);
 
         StepVerifier.create(service.replyMessage(new SlackMessageContext("any", "aChannel"), "aText"))
                     .expectNext(TheVoid.INSTANCE)
