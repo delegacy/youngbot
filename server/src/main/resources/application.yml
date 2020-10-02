@@ -48,6 +48,10 @@ cloud:
 
 
 management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus
   health:
     db:
       enabled: false
