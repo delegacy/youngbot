@@ -1,19 +1,19 @@
 boms:
-  - org.springframework.boot:spring-boot-dependencies:2.2.5.RELEASE
-  - io.micrometer:micrometer-bom:1.3.5
-  - com.linecorp.armeria:armeria-bom:0.98.4
+  - org.springframework.boot:spring-boot-dependencies:2.3.4.RELEASE
+  - io.micrometer:micrometer-bom:1.5.5
+  - com.linecorp.armeria:armeria-bom:1.1.0
 
 com.linecorp.bot:
   line-bot-model:
-    version: '3.3.1'
+    version: '4.1.0'
 
 com.hubspot.slack:
   slack-base:
-    version: '1.6'
+    version: '1.11'
 
 org.apache.commons:
   commons-lang3:
-    version: '3.9'
+    version: '3.11'
 
 javax.annotation:
   javax.annotation-api:
@@ -35,7 +35,7 @@ ch.qos.logback.contrib:
 
 org.junit.jupiter:
   junit-jupiter-api:
-    version: &JUNIT_JUPITER_VERSION '5.6.0'
+    version: &JUNIT_JUPITER_VERSION '5.7.0'
   junit-jupiter-params:
     version: *JUNIT_JUPITER_VERSION
   junit-jupiter-engine:
@@ -43,7 +43,7 @@ org.junit.jupiter:
 
 org.junit.platform:
   junit-platform-commons:
-    version: &JUNIT_PLATFORM_VERSION '1.6.0'
+    version: &JUNIT_PLATFORM_VERSION '1.7.0'
   junit-platform-launcher:
     version: *JUNIT_PLATFORM_VERSION
   junit-platform-engine:

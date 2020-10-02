@@ -5,14 +5,14 @@ buildscript {
 
     dependencies {
         classpath 'com.google.gradle:osdetector-gradle-plugin:1.6.2'
-        classpath 'io.spring.gradle:dependency-management-plugin:1.0.8.RELEASE'
-        classpath 'com.bmuschko:gradle-docker-plugin:5.1.0'
+        classpath 'io.spring.gradle:dependency-management-plugin:1.0.10.RELEASE'
+        classpath 'com.bmuschko:gradle-docker-plugin:6.6.1'
     }
 }
 
 plugins {
-    id 'org.springframework.boot' version '2.1.8.RELEASE' apply false
-    id 'org.sonarqube' version '2.7.1'
+    id 'org.springframework.boot' version '2.3.4.RELEASE' apply false
+    id 'org.sonarqube' version '3.0'
 }
 
 allprojects {
@@ -22,6 +22,12 @@ allprojects {
 }
 
 apply from: "${rootDir}/gradle/scripts/build-flags.gradle"
+
+subprojects {
+    sonarqube {
+        skipProject = true
+    }
+}
 
 // Configure all Java projects.
 configure(projectsWithFlags('java')) {
@@ -38,7 +44,7 @@ configure(projectsWithFlags('java')) {
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
         testRuntimeOnly 'org.junit.platform:junit-platform-engine'
 
-        testCompile 'com.linecorp.armeria:armeria-testing-junit'
+        testCompile 'com.linecorp.armeria:armeria-junit5'
         testCompile 'io.projectreactor:reactor-test'
         testCompile 'org.mockito:mockito-junit-jupiter'
     }
@@ -63,5 +69,9 @@ configure(projectsWithFlags('java')) {
         }
 
         failFast = true
+    }
+
+    sonarqube {
+        skipProject = false
     }
 }

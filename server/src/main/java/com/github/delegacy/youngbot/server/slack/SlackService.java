@@ -25,7 +25,7 @@ import com.linecorp.armeria.common.HttpHeaderNames;
 import com.linecorp.armeria.common.HttpMethod;
 import com.linecorp.armeria.common.HttpRequest;
 import com.linecorp.armeria.common.MediaType;
-import com.linecorp.armeria.spring.MeterIdPrefixFunctionFactory;
+import com.linecorp.armeria.common.metric.MeterIdPrefixFunction;
 
 import reactor.core.publisher.Mono;
 
@@ -42,10 +42,10 @@ public class SlackService implements PlatformService {
         checkArgument(StringUtils.isNotEmpty(botToken), "empty botToken");
 
         slackClient = WebClient.builder(slackClientBaseUri)
-                .addHttpHeader(HttpHeaderNames.AUTHORIZATION, "Bearer " + botToken)
+                .addHeader(HttpHeaderNames.AUTHORIZATION, "Bearer " + botToken)
                 .decorator(LoggingClient.newDecorator())
                 .decorator(MetricCollectingClient.newDecorator(
-                        MeterIdPrefixFunctionFactory.DEFAULT.get("client", "slack")))
+                        MeterIdPrefixFunction.ofDefault("armeria.client").withTags("service", "slack")))
                 .build();
     }
 

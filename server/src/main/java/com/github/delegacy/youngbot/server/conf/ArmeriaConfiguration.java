@@ -4,8 +4,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.linecorp.armeria.client.ClientFactory;
-import com.linecorp.armeria.client.circuitbreaker.CircuitBreakerHttpClientBuilder;
-import com.linecorp.armeria.client.circuitbreaker.CircuitBreakerStrategy;
+import com.linecorp.armeria.client.circuitbreaker.CircuitBreakerClient;
+import com.linecorp.armeria.client.circuitbreaker.CircuitBreakerRule;
 import com.linecorp.armeria.server.docs.DocService;
 import com.linecorp.armeria.server.logging.AccessLogWriter;
 import com.linecorp.armeria.server.logging.LoggingService;
@@ -22,14 +22,10 @@ public class ArmeriaConfiguration {
     }
 
     @Bean
-    public ClientFactory clientFactory() {
-        return ClientFactory.DEFAULT;
-    }
-
-    @Bean
-    public ArmeriaClientConfigurator armeriaClientConfigurator(ClientFactory clientFactory) {
-        return builder -> builder.factory(clientFactory)
-                                 .decorator(new CircuitBreakerHttpClientBuilder(
-                                         CircuitBreakerStrategy.onServerErrorStatus()).newDecorator());
+    public ArmeriaClientConfigurator armeriaClientConfigurator() {
+        return builder ->
+                builder.factory(ClientFactory.ofDefault())
+                       .decorator(CircuitBreakerClient.builder(CircuitBreakerRule.onServerErrorStatus())
+                                                      .newDecorator());
     }
 }
