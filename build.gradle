@@ -33,6 +33,9 @@ subprojects {
 configure(projectsWithFlags('java')) {
     // Common dependencies
     dependencies {
+        // JSR305
+        implementation 'com.google.code.findbugs:jsr305'
+        
         testCompile 'org.springframework.boot:spring-boot-starter-test'
         // WebTestClient still requires this lib.
         testRuntimeOnly 'org.springframework.boot:spring-boot-starter-reactor-netty'

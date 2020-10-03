@@ -9,15 +9,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.github.delegacy.youngbot.server.message.MessageContext;
 import com.github.delegacy.youngbot.server.TheVoid;
+import com.github.delegacy.youngbot.server.message.MessageContext;
 import com.github.delegacy.youngbot.server.platform.Platform;
 import com.github.delegacy.youngbot.server.platform.PlatformRpcException;
 import com.github.delegacy.youngbot.server.platform.PlatformService;
 
+import com.linecorp.armeria.client.WebClient;
 import com.linecorp.armeria.client.logging.LoggingClient;
 import com.linecorp.armeria.client.metric.MetricCollectingClient;
-import com.linecorp.armeria.client.WebClient;
 import com.linecorp.armeria.common.HttpHeaderNames;
 import com.linecorp.armeria.common.HttpMethod;
 import com.linecorp.armeria.common.HttpRequest;
@@ -29,12 +29,18 @@ import com.linecorp.bot.model.message.TextMessage;
 
 import reactor.core.publisher.Mono;
 
+/**
+ * TBW.
+ */
 @Service
 public class LineService implements PlatformService {
     private static final Logger logger = LoggerFactory.getLogger(LineService.class);
 
     private final WebClient lineClient;
 
+    /**
+     * TBW.
+     */
     public LineService(@Value("${youngbot.line.client.base-uri}") String apiBaseUri,
                        @Value("${youngbot.line.channel-token}") String channelToken) {
 
@@ -42,11 +48,12 @@ public class LineService implements PlatformService {
         checkArgument(StringUtils.isNotEmpty(channelToken), "empty channelToken");
 
         lineClient = WebClient.builder(apiBaseUri)
-                .addHeader(HttpHeaderNames.AUTHORIZATION, "Bearer " + channelToken)
-                .decorator(LoggingClient.newDecorator())
-                .decorator(MetricCollectingClient.newDecorator(
-                        MeterIdPrefixFunction.ofDefault("armeria.client").withTags("service", "line")))
-                .build();
+                              .addHeader(HttpHeaderNames.AUTHORIZATION, "Bearer " + channelToken)
+                              .decorator(LoggingClient.newDecorator())
+                              .decorator(MetricCollectingClient.newDecorator(
+                                      MeterIdPrefixFunction.ofDefault("armeria.client")
+                                                           .withTags("service", "line")))
+                              .build();
     }
 
     @Override

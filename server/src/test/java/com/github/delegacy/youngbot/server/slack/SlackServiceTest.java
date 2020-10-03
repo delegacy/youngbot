@@ -20,6 +20,7 @@ import reactor.test.StepVerifier;
 class SlackServiceTest {
     private static final String DUMMY_TOKEN = "DUMMY_TOKEN";
 
+    @SuppressWarnings("checkstyle:LineLength")
     @RegisterExtension
     static final ServerExtension server = new ServerExtension() {
         @Override

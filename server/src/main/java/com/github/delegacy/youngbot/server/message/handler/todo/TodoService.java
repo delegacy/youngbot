@@ -272,6 +272,7 @@ class TodoService {
                    });
     }
 
+    @SuppressWarnings("checkstyle:LineLength")
     private static Mono<String> processHelp(Collection<String> actions) {
         return Flux.fromIterable(actions)
                    .map(CommandType::of)

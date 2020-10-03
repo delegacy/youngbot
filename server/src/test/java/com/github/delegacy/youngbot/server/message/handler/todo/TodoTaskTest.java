@@ -98,7 +98,8 @@ class TodoTaskTest {
     }
 
     @Test
-    @DisplayName("Incomplete Tasks Rule 2: A task's creation date may optionally appear directly after priority and a space.")
+    @DisplayName("Incomplete Tasks Rule 2: " +
+                 "A task's creation date may optionally appear directly after priority and a space.")
     void testParse_incompleteTasks_rule2() {
         TodoTask todoLine = TodoTask.of("2011-03-02 Document +TodoTxt task format");
         assertThat(todoLine.isCompleted()).isFalse();
@@ -132,7 +133,8 @@ class TodoTaskTest {
     }
 
     @Test
-    @DisplayName("Incomplete Tasks Rule 3: Contexts and Projects may appear anywhere in the line after priority/prepended date.")
+    @DisplayName("Incomplete Tasks Rule 3: " +
+                 "Contexts and Projects may appear anywhere in the line after priority/prepended date.")
     void testParse_incompleteTasks_rule3() {
         TodoTask todoLine = TodoTask.of("(A) Call Mom +Family +PeaceLoveAndHappiness @iphone @phone");
         assertThat(todoLine.isCompleted()).isFalse();
@@ -210,7 +212,8 @@ class TodoTaskTest {
     }
 
     @Test
-    @DisplayName("Complete Tasks Rule 2: The date of completion appears directly after the x, separated by a space.")
+    @DisplayName("Complete Tasks Rule 2: " +
+                 "The date of completion appears directly after the x, separated by a space.")
     void testParse_completeTasks_rule2() {
         final TodoTask todoLine =
                 TodoTask.of("x 2011-03-02 2011-03-01 Review Tim's pull request +TodoTxtTouch @github");

@@ -12,16 +12,25 @@ import javax.annotation.PostConstruct;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
+/**
+ * TBW.
+ */
 @Component
 public class MessageHandlerManager {
     private List<MessageHandler> handlers = Collections.emptyList();
 
     private final ApplicationContext applicationContext;
 
+    /**
+     * TBW.
+     */
     public MessageHandlerManager(ApplicationContext applicationContext) {
         this.applicationContext = requireNonNull(applicationContext, "applicationContext");
     }
 
+    /**
+     * TBW.
+     */
     @PostConstruct
     public void init() {
         handlers = applicationContext.getBeansOfType(MessageHandler.class)
@@ -29,6 +38,9 @@ public class MessageHandlerManager {
                                      .collect(Collectors.toUnmodifiableList());
     }
 
+    /**
+     * TBW.
+     */
     public Collection<MessageHandler> handlers() {
         return handlers;
     }

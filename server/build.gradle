@@ -2,6 +2,8 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'com.bmuschko.docker-remote-api'
 
 dependencies {
+    implementation project(':common')
+
     compile 'com.linecorp.armeria:armeria-spring-boot2-webflux-starter'
     compile 'com.linecorp.armeria:armeria-grpc'
 

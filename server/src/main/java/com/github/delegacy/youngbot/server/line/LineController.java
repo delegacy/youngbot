@@ -29,6 +29,9 @@ import com.linecorp.bot.model.event.message.TextMessageContent;
 import reactor.core.scheduler.Schedulers;
 import reactor.util.context.Context;
 
+/**
+ * TBW.
+ */
 @RestController
 @RequestMapping("/api/line/v1")
 public class LineController {
@@ -38,6 +41,9 @@ public class LineController {
 
     private final MessageService messageService;
 
+    /**
+     * TBW.
+     */
     @Inject
     public LineController(LineSignatureValidator lineSignatureValidator,
                           MessageService messageService) {
@@ -46,6 +52,9 @@ public class LineController {
         this.messageService = requireNonNull(messageService, "messageService");
     }
 
+    /**
+     * TBW.
+     */
     @PostMapping("/webhook")
     public ResponseEntity<Void> onWebhook(RequestEntity<String> req, ServerWebExchange exchange) {
         final List<String> signatures = req.getHeaders().get("X-Line-Signature");

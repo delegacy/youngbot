@@ -12,8 +12,14 @@ import com.linecorp.armeria.server.logging.LoggingService;
 import com.linecorp.armeria.spring.ArmeriaServerConfigurator;
 import com.linecorp.armeria.spring.web.reactive.ArmeriaClientConfigurator;
 
+/**
+ * TBW.
+ */
 @Configuration
 public class ArmeriaConfiguration {
+    /**
+     * TBW.
+     */
     @Bean
     public ArmeriaServerConfigurator armeriaServerConfigurator() {
         return builder -> builder.serviceUnder("/docs", new DocService())
@@ -21,6 +27,9 @@ public class ArmeriaConfiguration {
                                  .accessLogWriter(AccessLogWriter.combined(), false);
     }
 
+    /**
+     * TBW.
+     */
     @Bean
     public ArmeriaClientConfigurator armeriaClientConfigurator() {
         return builder ->

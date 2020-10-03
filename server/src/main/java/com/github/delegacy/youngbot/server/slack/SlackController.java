@@ -23,6 +23,9 @@ import com.hubspot.slack.client.models.events.SlackEventWrapperIF;
 import reactor.core.scheduler.Schedulers;
 import reactor.util.context.Context;
 
+/**
+ * TBW.
+ */
 @RestController
 @RequestMapping("/api/slack/v1")
 public class SlackController {
@@ -30,10 +33,16 @@ public class SlackController {
 
     private final MessageService messageService;
 
+    /**
+     * TBW.
+     */
     public SlackController(MessageService messageService) {
         this.messageService = requireNonNull(messageService, "messageService");
     }
 
+    /**
+     * TBW.
+     */
     @PostMapping("/event")
     public ResponseEntity<String> onEvent(RequestEntity<String> req, ServerWebExchange exchange) {
         final String reqBody = requireNonNull(req.getBody(), "reqBody");

@@ -7,15 +7,24 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * TBW.
+ */
 public final class JacksonUtils {
     private static final Logger logger = LoggerFactory.getLogger(JacksonUtils.class);
 
     private static final ObjectMapper OM = new ObjectMapper();
 
+    /**
+     * TBW.
+     */
     public static String serialize(Object obj) {
         return serialize(OM, obj);
     }
 
+    /**
+     * TBW.
+     */
     public static String serialize(ObjectMapper om, Object obj) {
         try {
             return om.writeValueAsString(obj);
@@ -25,10 +34,16 @@ public final class JacksonUtils {
         }
     }
 
+    /**
+     * TBW.
+     */
     public static <T> T deserialize(String str, Class<T> clazz) {
         return deserialize(OM, str, clazz);
     }
 
+    /**
+     * TBW.
+     */
     public static <T> T deserialize(ObjectMapper om, String str, Class<T> clazz) {
         try {
             return om.readValue(str, clazz);
@@ -38,10 +53,16 @@ public final class JacksonUtils {
         }
     }
 
+    /**
+     * TBW.
+     */
     public static <T> T deserialize(byte[] bytes, Class<T> clazz) {
         return deserialize(OM, bytes, clazz);
     }
 
+    /**
+     * TBW.
+     */
     public static <T> T deserialize(ObjectMapper om, byte[] bytes, Class<T> clazz) {
         try {
             return om.readValue(bytes, clazz);
