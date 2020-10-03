@@ -10,17 +10,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.github.delegacy.youngbot.server.message.MessageContext;
 import com.github.delegacy.youngbot.server.TheVoid;
+import com.github.delegacy.youngbot.server.message.MessageContext;
 import com.github.delegacy.youngbot.server.platform.Platform;
 import com.github.delegacy.youngbot.server.platform.PlatformRpcException;
 import com.github.delegacy.youngbot.server.platform.PlatformService;
 import com.hubspot.slack.client.methods.params.chat.ChatPostMessageParams;
 import com.hubspot.slack.client.models.response.chat.ChatPostMessageResponse;
 
+import com.linecorp.armeria.client.WebClient;
 import com.linecorp.armeria.client.logging.LoggingClient;
 import com.linecorp.armeria.client.metric.MetricCollectingClient;
-import com.linecorp.armeria.client.WebClient;
 import com.linecorp.armeria.common.HttpHeaderNames;
 import com.linecorp.armeria.common.HttpMethod;
 import com.linecorp.armeria.common.HttpRequest;
@@ -29,12 +29,18 @@ import com.linecorp.armeria.common.metric.MeterIdPrefixFunction;
 
 import reactor.core.publisher.Mono;
 
+/**
+ * TBW.
+ */
 @Service
 public class SlackService implements PlatformService {
     private static final Logger logger = LoggerFactory.getLogger(SlackService.class);
 
     private final WebClient slackClient;
 
+    /**
+     * TBW.
+     */
     public SlackService(@Value("${youngbot.slack.client.base-uri}") String slackClientBaseUri,
                         @Value("${youngbot.slack.client.bot-token}") String botToken) {
 

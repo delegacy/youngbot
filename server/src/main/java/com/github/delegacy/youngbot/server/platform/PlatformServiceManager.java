@@ -12,7 +12,10 @@ import javax.annotation.PostConstruct;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
-@SuppressWarnings("ClassWithOnlyPrivateConstructors")
+/**
+ * TBW.
+ */
+@SuppressWarnings({"ClassWithOnlyPrivateConstructors", "checkstyle:FinalClass"})
 @Component
 public class PlatformServiceManager {
     private static final PlatformService NOOP = new NoopPlatformService();
@@ -33,6 +36,9 @@ public class PlatformServiceManager {
                                              PlatformService::platform, Function.identity()));
     }
 
+    /**
+     * TBW.
+     */
     public PlatformService get(Platform platform) {
         return services.getOrDefault(platform, NOOP);
     }

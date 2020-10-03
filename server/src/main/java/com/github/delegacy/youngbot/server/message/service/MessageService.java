@@ -9,13 +9,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.github.delegacy.youngbot.server.message.MessageContext;
 import com.github.delegacy.youngbot.server.TheVoid;
+import com.github.delegacy.youngbot.server.message.MessageContext;
 import com.github.delegacy.youngbot.server.message.handler.MessageHandlerManager;
 import com.github.delegacy.youngbot.server.platform.PlatformServiceManager;
 
 import reactor.core.publisher.Flux;
 
+/**
+ * TBW.
+ */
 @Service
 public class MessageService {
     private static final Logger logger = LoggerFactory.getLogger(MessageService.class);
@@ -24,6 +27,9 @@ public class MessageService {
 
     private final PlatformServiceManager platformServiceManager;
 
+    /**
+     * TBW.
+     */
     public MessageService(MessageHandlerManager messageHandlerManager,
                           PlatformServiceManager platformServiceManager) {
 
@@ -31,6 +37,9 @@ public class MessageService {
         this.platformServiceManager = requireNonNull(platformServiceManager, "platformServiceManager");
     }
 
+    /**
+     * TBW.
+     */
     public Flux<TheVoid> process(MessageContext msgCtx) {
         final String text = msgCtx.text();
 

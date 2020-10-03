@@ -9,6 +9,9 @@ import org.springframework.context.annotation.Configuration;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 
+/**
+ * TBW.
+ */
 @Configuration
 public class MeterRegistryConfiguration {
     @Bean

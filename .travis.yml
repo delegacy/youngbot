@@ -12,11 +12,6 @@ notifications:
     on_success: change
     on_failure: always
     on_pull_requests: false
-addons:
-  sonarcloud:
-    organization: delegacy-github
-    token:
-      secure: eMXBgzmGwoYXnACqX3noOG2HvMOU9DdlWloOnTjP7VfUoLtxI199tVDfmL4oZm86qHQ6pqaLL7mYea4fHZ9oeI6MACwTgPKLZx3En3ERslYZQZ96dkJYT77itnFeGHQFs73CJ9rsTGFwgX+2i/SMyL8urmAekDN1/H3BL4KoCTo7ouMIgOrEnb13IJqwnEAN1FZffHk9cUXrOxRHdxRgTFXv7XYJq+PFxMaMP9mxbpxhi6qfr11taLnPccZHzijKap8E0m3Y8viHnOf1TZb2ftuT7oocO6O+Wqcq5Fmv2fjwBnE4V/4h81RT5Lo09m0V+UTgf50Hv3zx8mE1ketYBE6p1pawQEjOyd3RZH8h1t0vyH6NfYbKmbTfPb5hDJikiUpuzRPv86ksKi9eObgFZjmD3QaEsV4UdOKZjOm7nvtUD55lQUZE4CBOVc4+SCaYlzHkOCM2520Ps/JpHhj0weNBXt6nOy29DiJiLxb+QwI2cv77sQL1asFlA8/gJtitTuGcon2Fm8ucJF9XDHf/tdMJ2pntD4e2ytiEZ6DWsQdNWiOVw4bkpOW93Ete2AwKlWXuyV0Hv05HP9QTA7yFZAOhKvPzPdHNIGJjE42O9m2qtBmmrNsrsnyrr8Gz9pcWVJdqYFCWybMw4i1KCdE7oNDh1bx2Pbszf/EL6tbZbGw=
 env:
   global:
     - PATH=$HOME/.local/bin:$PATH
@@ -31,12 +26,12 @@ cache:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
 script:
-  - './gradlew --no-daemon --stacktrace --warning-mode=all -Pcoverage check build sonarqube'
+  - './gradlew --no-daemon --stacktrace --warning-mode=all -Pcoverage check'
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 deploy:
   skip_cleanup: true
   provider: script
-  script: './gradlew --no-daemon --stacktrace --warning-mode=all dockerPushImage -x test'
+  script: './gradlew --no-daemon --stacktrace --warning-mode=all dockerPushImage -x test -x check'
   on:
     branch: master

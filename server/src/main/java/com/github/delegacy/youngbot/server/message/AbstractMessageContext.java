@@ -4,6 +4,9 @@ import static java.util.Objects.requireNonNull;
 
 import com.google.common.base.MoreObjects;
 
+/**
+ * TBW.
+ */
 public abstract class AbstractMessageContext implements MessageContext {
     private final String text;
 

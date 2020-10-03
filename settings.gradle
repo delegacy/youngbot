@@ -2,4 +2,5 @@ rootProject.name = 'young-bot'
 
 apply from: "${rootDir}/gradle/scripts/settings-flags.gradle"
 
+includeWithFlags ':common', 'java', 'publish'
 includeWithFlags ':server', 'java', 'publish'

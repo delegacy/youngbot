@@ -19,10 +19,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 
-import com.github.delegacy.youngbot.server.util.junit.TextFile;
-import com.github.delegacy.youngbot.server.util.junit.TextFileParameterResolver;
 import com.github.delegacy.youngbot.server.message.service.MessageService;
 import com.github.delegacy.youngbot.server.platform.Platform;
+import com.github.delegacy.youngbot.server.util.junit.TextFile;
+import com.github.delegacy.youngbot.server.util.junit.TextFileParameterResolver;
 
 import reactor.core.publisher.Flux;
 
