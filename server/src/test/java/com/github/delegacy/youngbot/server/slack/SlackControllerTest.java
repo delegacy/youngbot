@@ -2,7 +2,6 @@ package com.github.delegacy.youngbot.server.slack;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -20,12 +19,12 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 
-import com.github.delegacy.youngbot.server.message.service.MessageService;
-import com.github.delegacy.youngbot.server.platform.Platform;
 import com.github.delegacy.youngbot.server.util.junit.TextFile;
 import com.github.delegacy.youngbot.server.util.junit.TextFileParameterResolver;
-
-import reactor.core.publisher.Flux;
+import com.slack.api.bolt.request.Request;
+import com.slack.api.bolt.request.RequestType;
+import com.slack.api.bolt.request.builtin.EventRequest;
+import com.slack.api.bolt.response.Response;
 
 @ExtendWith(SpringExtension.class)
 @ExtendWith(TextFileParameterResolver.class)
@@ -35,60 +34,35 @@ class SlackControllerTest {
     private WebTestClient webClient;
 
     @MockBean
-    private MessageService messageService;
+    private SlackAppBlockingService slackAppBlockingService;
 
     @BeforeEach
-    void beforeEach() {
-        when(messageService.process(any())).thenReturn(Flux.empty());
+    void beforeEach() throws Exception {
+        when(slackAppBlockingService.run(any(Request.class))).thenReturn(Response.ok());
     }
 
     @Test
-    void testSlackEventMessage(@TextFile("slackEventMessage.json") String json) {
+    void testMessageEvent(@TextFile("slackEventMessage.json") String json) throws Exception {
         webClient.post().uri("/api/slack/v1/event")
-                 .body(BodyInserters.fromObject(json))
+                 .body(BodyInserters.fromValue(json))
                  .exchange()
                  .expectStatus().isOk();
 
-        final ArgumentCaptor<SlackMessageContext> msgCtxCaptor =
-                ArgumentCaptor.forClass(SlackMessageContext.class);
+        final ArgumentCaptor<EventRequest> reqCaptor = ArgumentCaptor.forClass(EventRequest.class);
+        verify(slackAppBlockingService, times(1)).run(reqCaptor.capture());
 
-        verify(messageService, times(1)).process(msgCtxCaptor.capture());
-
-        final SlackMessageContext ctx = msgCtxCaptor.getValue();
-        assertThat(ctx.platform()).isEqualTo(Platform.SLACK);
-        assertThat(ctx.channelId()).isEqualTo("aChannel");
-        assertThat(ctx.text()).isEqualTo("ping");
+        final EventRequest req = reqCaptor.getValue();
+        assertThat(req.getRequestType()).isEqualTo(RequestType.Event);
+        assertThat(req.getRequestBodyAsString()).isEqualTo(json);
     }
 
     @Test
-    void testSlackEventBotMessage(@TextFile("slackEventBotMessage.json") String json) {
+    void testInternalError(@TextFile("slackEventMessage.json") String json) throws Exception {
+        when(slackAppBlockingService.run(any(Request.class))).thenThrow(RuntimeException.class);
+
         webClient.post().uri("/api/slack/v1/event")
-                 .body(BodyInserters.fromObject(json))
-                 .exchange()
-                 .expectStatus().isOk();
-
-        verify(messageService, never()).process(any());
-    }
-
-    @Test
-    void testChallengeEvent(@TextFile("challengeEvent.json") String json) {
-        webClient.post().uri("/api/slack/v1/event")
-                 .body(BodyInserters.fromObject(json))
-                 .exchange()
-                 .expectStatus().isOk()
-                 .expectBody(String.class)
-                 .isEqualTo("3eZbrw1aBm2rZgRNFdxV2595E9CY3gmdALWMmHkvFXO7tYXAYM8P");
-
-        verify(messageService, never()).process(any());
-    }
-
-    @Test
-    void testInvalidRequestBody() {
-        webClient.post().uri("/api/slack/v1/event")
-                 .body(BodyInserters.fromObject("{}"))
+                 .body(BodyInserters.fromValue(json))
                  .exchange()
                  .expectStatus().is5xxServerError();
-
-        verify(messageService, never()).process(any());
     }
 }

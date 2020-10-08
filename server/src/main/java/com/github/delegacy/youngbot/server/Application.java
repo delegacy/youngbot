@@ -3,6 +3,8 @@ package com.github.delegacy.youngbot.server;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import reactor.core.scheduler.Schedulers;
+
 /**
  * TBW.
  */
@@ -14,6 +16,8 @@ public class Application {
      */
     @SuppressWarnings("checkstyle:UncommentedMain")
     public static void main(String[] args) {
+        Schedulers.enableMetrics();
+
         SpringApplication.run(Application.class, args);
     }
 }
