@@ -7,9 +7,21 @@ com.linecorp.bot:
   line-bot-model:
     version: '4.1.0'
 
-com.hubspot.slack:
-  slack-base:
-    version: '1.11'
+com.slack.api:
+  bolt:
+    version: '1.2.0'
+
+javax.websocket:
+  javax.websocket-api:
+    version: '1.1'
+
+org.glassfish.tyrus.bundles:
+  tyrus-standalone-client:
+    version: '1.17'
+
+com.google.guava:
+  guava:
+    version: '29.0-jre'
 
 org.apache.commons:
   commons-lang3:
@@ -52,3 +64,7 @@ org.junit.platform:
     version: *JUNIT_PLATFORM_VERSION
   junit-platform-engine:
     version: *JUNIT_PLATFORM_VERSION
+
+org.awaitility:
+  awaitility:
+    version: '4.0.3'

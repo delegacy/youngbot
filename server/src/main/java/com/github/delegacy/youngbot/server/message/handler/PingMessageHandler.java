@@ -11,8 +11,11 @@ import com.github.delegacy.youngbot.server.message.MessageContext;
 
 import reactor.core.publisher.Flux;
 
+/**
+ * TBW.
+ */
 @Component
-class PingMessageHandler implements MessageHandler {
+public class PingMessageHandler implements MessageHandler {
     private static final Pattern PATTERN = Pattern.compile("^/?ping$", CASE_INSENSITIVE);
 
     private static final String PONG = "PONG";

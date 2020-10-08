@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 /**
  * TBW.
  */
-@SuppressWarnings({"ClassWithOnlyPrivateConstructors", "checkstyle:FinalClass"})
 @Component
 public class PlatformServiceManager {
     private static final PlatformService NOOP = new NoopPlatformService();
@@ -24,12 +23,18 @@ public class PlatformServiceManager {
 
     private Map<Platform, PlatformService> services = Collections.emptyMap();
 
-    private PlatformServiceManager(ApplicationContext applicationContext) {
+    /**
+     * TBW.
+     */
+    public PlatformServiceManager(ApplicationContext applicationContext) {
         this.applicationContext = requireNonNull(applicationContext, "applicationContext");
     }
 
+    /**
+     * TBW.
+     */
     @PostConstruct
-    private void init() {
+    public void init() {
         services = applicationContext.getBeansOfType(PlatformService.class)
                                      .values().stream()
                                      .collect(Collectors.toUnmodifiableMap(

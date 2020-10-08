@@ -5,9 +5,6 @@ dependencies {
     implementation project(':common')
 
     compile 'com.linecorp.armeria:armeria-spring-boot2-webflux-starter'
-    compile 'com.linecorp.armeria:armeria-grpc'
-
-    compile 'org.springframework.boot:spring-boot-starter-actuator'
 
     // Spring Data JPA
     compile 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -15,13 +12,17 @@ dependencies {
     compile 'com.h2database:h2'
     runtime 'mysql:mysql-connector-java'
 
-    compile 'com.hubspot.slack:slack-base'
+    compile 'org.springframework.boot:spring-boot-starter-actuator'
+    compile 'io.micrometer:micrometer-registry-prometheus'
 
     compile 'com.linecorp.bot:line-bot-model'
 
-    compile 'org.apache.commons:commons-lang3'
+    compile 'com.slack.api:bolt'
+    compile 'javax.websocket:javax.websocket-api'
+    compile 'org.glassfish.tyrus.bundles:tyrus-standalone-client'
 
-    compile 'io.micrometer:micrometer-registry-prometheus'
+    compile 'com.google.guava:guava'
+    compile 'org.apache.commons:commons-lang3'
 
     runtime 'ch.qos.logback:logback-classic'
     runtime 'org.slf4j:log4j-over-slf4j'

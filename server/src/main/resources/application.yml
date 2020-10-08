@@ -10,9 +10,10 @@ armeria:
 
 youngbot:
   slack:
-    client:
-      base-uri: https://slack.com/api
-      bot-token: bot-token
+    bot-token: bot-token
+    signing-secret: signing-secret
+    rtm:
+      enabled: false
   line:
     channel-token: channel-token
     channel-secret: channel-secret
@@ -51,7 +52,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info, prometheus
+        include: health, info, prometheus, loggers
   health:
     db:
       enabled: false
