@@ -12,8 +12,11 @@ import com.github.delegacy.youngbot.server.message.MessageContext;
 
 import reactor.core.publisher.Flux;
 
+/**
+ * TBW.
+ */
 @Component
-class EchoMessageHandler implements MessageHandler {
+public class EchoMessageHandler implements MessageHandler {
     private static final Pattern PATTERN = Pattern.compile("^/?echo\\s+(.+)$",
                                                            CASE_INSENSITIVE | DOTALL);
 
