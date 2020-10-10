@@ -15,7 +15,8 @@ dependencies {
     compile 'org.springframework.boot:spring-boot-starter-actuator'
     compile 'io.micrometer:micrometer-registry-prometheus'
 
-    compile 'com.linecorp.bot:line-bot-model'
+    compile 'com.linecorp.bot:line-bot-api-client'
+    compile 'com.linecorp.bot:line-bot-parser'
 
     compile 'com.slack.api:bolt'
     compile 'javax.websocket:javax.websocket-api'

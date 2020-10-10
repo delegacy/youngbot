@@ -4,8 +4,10 @@ boms:
   - com.linecorp.armeria:armeria-bom:1.1.0
 
 com.linecorp.bot:
-  line-bot-model:
-    version: '4.1.0'
+  line-bot-api-client:
+    version: &LINE_BOT_VERSION '4.1.0'
+  line-bot-parser:
+    version: *LINE_BOT_VERSION
 
 com.slack.api:
   bolt:

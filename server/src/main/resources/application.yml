@@ -36,6 +36,7 @@ spring:
 logging:
   level:
     com.github.delegacy.youngbot.server: INFO
+    com.linecorp.bot.client.wire: WARN
 
 cloud:
   aws:
