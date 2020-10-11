@@ -4,31 +4,23 @@ apply plugin: 'com.bmuschko.docker-remote-api'
 dependencies {
     implementation project(':common')
 
-    compile 'com.linecorp.armeria:armeria-spring-boot2-webflux-starter'
+    implementation 'com.linecorp.armeria:armeria-spring-boot2-webflux-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 
-    // Spring Data JPA
-    compile 'org.springframework.boot:spring-boot-starter-data-jpa'
-    compile 'org.springframework.boot:spring-boot-starter-validation'
-    compile 'com.h2database:h2'
-    runtime 'mysql:mysql-connector-java'
+    implementation 'com.linecorp.bot:line-bot-api-client'
+    implementation 'com.linecorp.bot:line-bot-parser'
 
-    compile 'org.springframework.boot:spring-boot-starter-actuator'
-    compile 'io.micrometer:micrometer-registry-prometheus'
+    implementation 'com.slack.api:bolt'
+    implementation 'javax.websocket:javax.websocket-api'
+    runtimeOnly 'org.glassfish.tyrus.bundles:tyrus-standalone-client'
 
-    compile 'com.linecorp.bot:line-bot-api-client'
-    compile 'com.linecorp.bot:line-bot-parser'
+    implementation 'com.google.guava:guava'
 
-    compile 'com.slack.api:bolt'
-    compile 'javax.websocket:javax.websocket-api'
-    compile 'org.glassfish.tyrus.bundles:tyrus-standalone-client'
-
-    compile 'com.google.guava:guava'
-    compile 'org.apache.commons:commons-lang3'
-
-    runtime 'ch.qos.logback:logback-classic'
-    runtime 'org.slf4j:log4j-over-slf4j'
-    runtime 'ch.qos.logback.contrib:logback-json-classic'
-    runtime 'ch.qos.logback.contrib:logback-jackson'
+    runtimeOnly 'ch.qos.logback:logback-classic'
+    runtimeOnly 'org.slf4j:log4j-over-slf4j'
+    runtimeOnly 'ch.qos.logback.contrib:logback-json-classic'
+    runtimeOnly 'ch.qos.logback.contrib:logback-jackson'
 }
 
 jar {

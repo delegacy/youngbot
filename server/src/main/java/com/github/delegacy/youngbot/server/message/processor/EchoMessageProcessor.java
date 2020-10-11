@@ -1,4 +1,4 @@
-package com.github.delegacy.youngbot.server.message.handler;
+package com.github.delegacy.youngbot.server.message.processor;
 
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.regex.Pattern.DOTALL;
@@ -8,7 +8,8 @@ import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Component;
 
-import com.github.delegacy.youngbot.server.message.MessageContext;
+import com.github.delegacy.youngbot.server.message.MessageRequest;
+import com.github.delegacy.youngbot.server.message.MessageResponse;
 
 import reactor.core.publisher.Flux;
 
@@ -16,7 +17,7 @@ import reactor.core.publisher.Flux;
  * TBW.
  */
 @Component
-public class EchoMessageHandler implements MessageHandler {
+class EchoMessageProcessor implements MessageProcessor {
     private static final Pattern PATTERN = Pattern.compile("^/?echo\\s+(.+)$",
                                                            CASE_INSENSITIVE | DOTALL);
 
@@ -26,7 +27,7 @@ public class EchoMessageHandler implements MessageHandler {
     }
 
     @Override
-    public Flux<String> handle(MessageContext msgCtx, Matcher matcher) {
-        return Flux.just(matcher.group(1));
+    public Flux<MessageResponse> process(MessageRequest request, Matcher matcher) {
+        return Flux.just(MessageResponse.of(request, matcher.group(1)));
     }
 }

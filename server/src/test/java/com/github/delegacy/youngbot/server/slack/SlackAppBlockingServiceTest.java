@@ -16,8 +16,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.github.delegacy.youngbot.server.message.handler.MessageHandlerManager;
-import com.github.delegacy.youngbot.server.message.handler.PingMessageHandler;
+import com.github.delegacy.youngbot.server.message.MessageResponse;
+import com.github.delegacy.youngbot.server.message.service.MessageService;
 import com.github.delegacy.youngbot.server.util.junit.TextFile;
 import com.github.delegacy.youngbot.server.util.junit.TextFileParameterResolver;
 import com.slack.api.app_backend.events.payload.EventsApiPayload;
@@ -31,6 +31,8 @@ import com.slack.api.bolt.util.EventsApiPayloadParser;
 import com.slack.api.methods.response.chat.ChatPostMessageResponse;
 import com.slack.api.model.event.MessageEvent;
 
+import reactor.core.publisher.Flux;
+
 @ExtendWith(MockitoExtension.class)
 @ExtendWith(TextFileParameterResolver.class)
 class SlackAppBlockingServiceTest {
@@ -38,13 +40,13 @@ class SlackAppBlockingServiceTest {
     private App app;
 
     @Mock
-    private MessageHandlerManager messageHandlerManager;
+    private MessageService messageService;
 
     private SlackAppBlockingService slackAppBlockingService;
 
     @BeforeEach
     void beforeEach() throws Exception {
-        slackAppBlockingService = new SlackAppBlockingService(app, messageHandlerManager);
+        slackAppBlockingService = new SlackAppBlockingService(app, messageService);
     }
 
     @Test
@@ -63,7 +65,8 @@ class SlackAppBlockingServiceTest {
         final ChatPostMessageResponse chatPostMessageResponse = new ChatPostMessageResponse();
         chatPostMessageResponse.setOk(true);
 
-        when(messageHandlerManager.handlers()).thenReturn(Collections.singletonList(new PingMessageHandler()));
+        when(messageService.process(any())).thenReturn(
+                Flux.just(MessageResponse.of(new SlackMessageRequest("ping", "channel", "thread"), "PONG")));
         when(ctx.say(any(BuilderConfigurator.class))).thenReturn(chatPostMessageResponse);
         when(ctx.ack()).thenReturn(Response.ok());
 

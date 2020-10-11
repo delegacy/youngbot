@@ -10,7 +10,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.regex.Matcher;
 
 import javax.inject.Inject;
 import javax.websocket.CloseReason.CloseCodes;
@@ -20,8 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
-import com.github.delegacy.youngbot.server.message.MessageContext;
-import com.github.delegacy.youngbot.server.message.handler.MessageHandlerManager;
+import com.github.delegacy.youngbot.server.message.service.MessageService;
 import com.slack.api.bolt.App;
 import com.slack.api.model.event.HelloEvent;
 import com.slack.api.model.event.MessageEvent;
@@ -32,7 +30,6 @@ import com.slack.api.rtm.RTMEventsDispatcherFactory;
 import com.slack.api.rtm.message.Message;
 import com.slack.api.rtm.message.PingMessage;
 
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.util.context.Context;
@@ -50,16 +47,16 @@ class SlackRtmService implements Closeable {
 
     private final RTMClient rtmClient;
 
-    private final MessageHandlerManager messageHandlerManager;
+    private final MessageService messageService;
 
     @Inject
-    SlackRtmService(App app, MessageHandlerManager messageHandlerManager) throws Exception {
-        this(app, messageHandlerManager, Executors.newSingleThreadScheduledExecutor());
+    SlackRtmService(App app, MessageService messageService) throws Exception {
+        this(app, messageService, Executors.newSingleThreadScheduledExecutor());
     }
 
-    SlackRtmService(App app, MessageHandlerManager messageHandlerManager,
-                    ScheduledExecutorService executorService) throws Exception {
-        this.messageHandlerManager = requireNonNull(messageHandlerManager, "messageHandlerManager");
+    SlackRtmService(App app, MessageService messageService, ScheduledExecutorService executorService)
+            throws Exception {
+        this.messageService = requireNonNull(messageService, "messageService");
         this.executorService = requireNonNull(executorService, "executorService");
 
         rtmClient = requireNonNull(app, "app").slack().rtmConnect(app.config().getSingleTeamBotToken());
@@ -117,39 +114,28 @@ class SlackRtmService implements Closeable {
         public void handle(MessageEvent event) {
             logger.debug("Received text<{}> from channel<{}>", event.getText(), event.getChannel());
 
-            final MessageContext msgCtx =
-                    new SlackMessageContext(event.getText(), event.getChannel());
+            final SlackMessageRequest msgReq =
+                    new SlackMessageRequest(event.getText(), event.getChannel());
 
-            Flux.fromIterable(messageHandlerManager.handlers())
-                .concatMap(handler -> {
-                    final Matcher matcher = handler.pattern().matcher(msgCtx.text());
-                    if (!matcher.matches()) {
-                        return Flux.empty();
-                    }
-                    return handler.handle(msgCtx, matcher);
-                })
-                .filter(s -> !s.isEmpty())
-                .flatMap(s -> replyMessage(event, s))
-                .subscriberContext(Context.of(REQUEST_ID_KEY, Long.toHexString(RANDOM.nextLong())))
-                .subscribeOn(Schedulers.boundedElastic())
-                .subscribe(null,
-                           t -> logger.error("Failed to handle event<{}>", event, t),
-                           () -> logger.info("Replied to text<{}> in channel<{}>",
-                                             event.getText(), event.getChannel()));
+            messageService.process(msgReq)
+                          .flatMap(res -> replyMessage(msgReq, res.text()))
+                          .subscriberContext(Context.of(REQUEST_ID_KEY, Long.toHexString(RANDOM.nextLong())))
+                          .subscribeOn(Schedulers.boundedElastic())
+                          .subscribe(null,
+                                     t -> logger.error("Failed to handle event<{}>", event, t));
         }
 
-        private Mono<Void> replyMessage(MessageEvent event, String text) {
+        private Mono<Void> replyMessage(SlackMessageRequest msgReq, String res) {
             return Mono.fromRunnable(() -> {
                 final long id = msgId.incrementAndGet();
                 rtmClient.sendMessage(Message.builder()
                                              .id(id)
-                                             .channel(event.getChannel())
-                                             .text(text)
+                                             .channel(msgReq.channel())
+                                             .text(res)
                                              .build()
                                              .toJSONString());
 
-                logger.debug("Replied to text<{}> in channel<{}>;id<{}>",
-                             event.getText(), event.getChannel(), id);
+                logger.debug("Replied to text<{}> in channel<{}>;id<{}>", msgReq.text(), msgReq.channel(), id);
             });
         }
     }
