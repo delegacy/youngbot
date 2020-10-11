@@ -1,6 +1,5 @@
-package com.github.delegacy.youngbot.server.message.handler;
+package com.github.delegacy.youngbot.server.message.processor;
 
-import static com.github.delegacy.youngbot.server.util.MessageContextTestUtils.newMessageContext;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.regex.Matcher;
@@ -11,17 +10,21 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import com.github.delegacy.youngbot.server.message.MessageResponse;
+import com.github.delegacy.youngbot.server.util.TestUtils;
+
 import reactor.test.StepVerifier;
 
 class EchoMessageHandlerTest {
-    private final EchoMessageHandler handler = new EchoMessageHandler();
+    private final EchoMessageProcessor processor = new EchoMessageProcessor();
 
     @ParameterizedTest
     @MethodSource("provideStringsForTestMatched")
     void testMatched(String input, String expected) {
-        final Matcher matcher = handler.pattern().matcher(input);
+        final Matcher matcher = processor.pattern().matcher(input);
         assertThat(matcher.matches()).isEqualTo(true);
-        StepVerifier.create(handler.handle(newMessageContext(input), matcher))
+        StepVerifier.create(processor.process(TestUtils.msgReq(input), matcher)
+                                     .map(MessageResponse::text))
                     .expectNext(expected)
                     .expectComplete()
                     .verify();
@@ -42,7 +45,7 @@ class EchoMessageHandlerTest {
     @ParameterizedTest
     @ValueSource(strings = { "eko Hello", "/eko Hello" })
     void testNotMatched(String input) {
-        final Matcher matcher = handler.pattern().matcher(input);
+        final Matcher matcher = processor.pattern().matcher(input);
         assertThat(matcher.matches()).isEqualTo(false);
     }
 }

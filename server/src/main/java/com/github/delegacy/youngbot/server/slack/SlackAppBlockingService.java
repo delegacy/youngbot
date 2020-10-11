@@ -1,18 +1,15 @@
 package com.github.delegacy.youngbot.server.slack;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Objects.requireNonNull;
 
 import java.io.IOException;
-import java.util.regex.Matcher;
-
-import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.github.delegacy.youngbot.server.message.MessageContext;
-import com.github.delegacy.youngbot.server.message.handler.MessageHandlerManager;
+import com.github.delegacy.youngbot.server.message.service.MessageService;
 import com.slack.api.app_backend.events.payload.EventsApiPayload;
 import com.slack.api.bolt.App;
 import com.slack.api.bolt.context.builtin.EventContext;
@@ -23,7 +20,6 @@ import com.slack.api.methods.SlackApiException;
 import com.slack.api.methods.response.chat.ChatPostMessageResponse;
 import com.slack.api.model.event.MessageEvent;
 
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
@@ -39,12 +35,11 @@ class SlackAppBlockingService {
 
     private final App app;
 
-    private final MessageHandlerManager messageHandlerManager;
+    private final MessageService messageService;
 
-    @Inject
-    SlackAppBlockingService(App app, MessageHandlerManager messageHandlerManager) {
+    SlackAppBlockingService(App app, MessageService messageService) {
         this.app = requireNonNull(app, "app");
-        this.messageHandlerManager = requireNonNull(messageHandlerManager, "messageHandlerManager");
+        this.messageService = requireNonNull(messageService, "messageService");
 
         app.event(MessageEvent.class, new MessageEventHandler());
     }
@@ -62,43 +57,33 @@ class SlackAppBlockingService {
             final MessageEvent msgEvent = event.getEvent();
             logger.debug("Received text<{}> from channel<{}>", msgEvent.getText(), msgEvent.getChannel());
 
-            final MessageContext msgCtx = new SlackMessageContext(msgEvent.getText(), msgEvent.getChannel());
-
-            Flux.fromIterable(messageHandlerManager.handlers())
-                .concatMap(handler -> {
-                    final Matcher matcher = handler.pattern().matcher(msgCtx.text());
-                    if (!matcher.matches()) {
-                        return Flux.empty();
-                    }
-                    return handler.handle(msgCtx, matcher);
-                })
-                .filter(s -> !s.isEmpty())
-                .flatMap(s -> Mono.fromCallable(
-                        () -> ctx.say(b -> b.channel(ctx.getChannelId())
-                                            .threadTs(msgEvent.getThreadTs() == null ? msgEvent.getTs()
-                                                                                     : msgEvent.getThreadTs())
-                                            .text(s))))
-                .subscribeOn(Schedulers.boundedElastic())
-                .subscribe(res -> onNextChatPostMessageResponse(msgEvent, res),
-                           t -> logger.error("Failed to handle event<{}>;ctx<{}>", event, ctx, t),
-                           () -> logger.info("Replied to text<{}> in channel<{}>",
-                                             msgEvent.getText(), msgEvent.getChannel()));
+            final SlackMessageRequest msgReq =
+                    new SlackMessageRequest(msgEvent.getText(), msgEvent.getChannel(),
+                                            firstNonNull(msgEvent.getThreadTs(), msgEvent.getTs()));
+            messageService.process(msgReq)
+                          .flatMap(res -> Mono.fromCallable(
+                                  () -> ctx.say(b -> b.channel(msgReq.channel())
+                                                      .threadTs(msgReq.thread())
+                                                      .text(res.text()))))
+                          .subscribeOn(Schedulers.boundedElastic())
+                          .subscribe(res -> onNextChatPostMessageResponse(msgReq, res),
+                                     t -> logger.error("Failed to handle event<{}>;ctx<{}>", event, ctx, t));
 
             return ctx.ack();
         }
 
-        private void onNextChatPostMessageResponse(MessageEvent event, ChatPostMessageResponse res) {
+        private void onNextChatPostMessageResponse(SlackMessageRequest msgReq, ChatPostMessageResponse res) {
             if (res.isOk()) {
                 if (res.getWarning() != null) {
                     logger.warn("Replied to text<{}> in channel<{}>;msg<{}>,warn<{}>",
-                                event.getText(), event.getChannel(), res.getMessage(), res.getWarning());
+                                msgReq.text(), msgReq.channel(), res.getMessage(), res.getWarning());
                 } else {
                     logger.debug("Replied to text<{}> in channel<{}>;msg<{}>",
-                                 event.getText(), event.getChannel(), res.getMessage());
+                                 msgReq.text(), msgReq.channel(), res.getMessage());
                 }
             } else {
                 logger.error("Failed to reply to text<{}> in channel<{}>;error<{}>",
-                             event.getText(), event.getChannel(), res.getError());
+                             msgReq.text(), msgReq.channel(), res.getError());
             }
         }
     }

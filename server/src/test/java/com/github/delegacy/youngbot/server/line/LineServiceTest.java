@@ -6,11 +6,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,15 +19,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.github.delegacy.youngbot.server.message.MessageContext;
-import com.github.delegacy.youngbot.server.message.handler.EchoMessageHandler;
-import com.github.delegacy.youngbot.server.message.handler.MessageHandler;
-import com.github.delegacy.youngbot.server.message.handler.MessageHandlerManager;
-import com.github.delegacy.youngbot.server.message.handler.PingMessageHandler;
+import com.github.delegacy.youngbot.server.message.MessageResponse;
+import com.github.delegacy.youngbot.server.message.service.MessageService;
 
 import com.linecorp.bot.client.LineMessagingClient;
 import com.linecorp.bot.model.ReplyMessage;
 import com.linecorp.bot.model.event.CallbackRequest;
+import com.linecorp.bot.model.event.Event;
 import com.linecorp.bot.model.event.MessageEvent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.model.event.source.UserSource;
@@ -39,66 +37,53 @@ import reactor.test.StepVerifier;
 
 @ExtendWith(MockitoExtension.class)
 class LineServiceTest {
-    private static class Echo5MessageHandler implements MessageHandler {
-        @Override
-        public Pattern pattern() {
-            return Pattern.compile("^/?echo5\\s+(.+)$");
-        }
-
-        @Override
-        public Flux<String> handle(MessageContext msgCtx, Matcher matcher) {
-            final String arg = matcher.group(1);
-            return Flux.just(arg).repeat(5);
-        }
+    private static CallbackRequest toCallbackRequest(LineMessageRequest req) {
+        return toCallbackRequest(List.of(req));
     }
 
-    private static class Echo6MessageHandler implements MessageHandler {
-        @Override
-        public Pattern pattern() {
-            return Pattern.compile("^/?echo6\\s+(.+)$");
-        }
+    private static CallbackRequest toCallbackRequest(List<LineMessageRequest> reqs) {
+        return CallbackRequest.builder()
+                              .events(toEvents(reqs))
+                              .build();
+    }
 
-        @Override
-        public Flux<String> handle(MessageContext msgCtx, Matcher matcher) {
-            final String arg = matcher.group(1);
-            return Flux.just(arg).repeat(6);
-        }
+    private static List<Event> toEvents(List<LineMessageRequest> reqs) {
+        return reqs.stream()
+                   .map(req -> MessageEvent.builder()
+                                           .replyToken(req.replyToken())
+                                           .source(UserSource.builder().userId(req.channel()).build())
+                                           .message(TextMessageContent.builder().text(req.text()).build())
+                                           .build())
+                   .collect(Collectors.toList());
     }
 
     @Mock
     private LineMessagingClient lineMessagingClient;
 
     @Mock
-    private MessageHandlerManager messageHandlerManager;
+    private MessageService messageService;
 
     private LineService lineService;
 
     @BeforeEach
     void beforeEach() throws Exception {
-        when(lineMessagingClient.replyMessage(any()))
-                .thenReturn(CompletableFuture.completedFuture(
-                        new BotApiResponse("requestId", "message", Collections.emptyList())));
+        when(lineMessagingClient.replyMessage(any())).thenReturn(
+                CompletableFuture.completedFuture(
+                        new BotApiResponse(UUID.randomUUID().toString(), "message", Collections.emptyList())));
 
-        lineService = new LineService(lineMessagingClient, messageHandlerManager);
+        when(lineMessagingClient.replyMessage(any())).thenAnswer(
+                m -> CompletableFuture.completedFuture(
+                new BotApiResponse(UUID.randomUUID().toString(), "message", Collections.emptyList())));
+
+        lineService = new LineService(lineMessagingClient, messageService);
     }
 
     @Test
     void testHandleCallback() throws Exception {
-        when(messageHandlerManager.handlers()).thenReturn(Collections.singletonList(new PingMessageHandler()));
+        final LineMessageRequest req = new LineMessageRequest("ping", "userId", "replyToken");
+        when(messageService.process(any())).thenReturn(Flux.just(MessageResponse.of(req, "PONG")));
 
-        final CallbackRequest callback =
-                CallbackRequest.builder()
-                               .events(Collections.singletonList(
-                                       MessageEvent.builder()
-                                                   .replyToken("replyToken")
-                                                   .source(UserSource.builder().userId("userId").build())
-                                                   .message(TextMessageContent.builder()
-                                                                              .text("ping")
-                                                                              .build())
-                                                   .build()))
-                               .build();
-
-        StepVerifier.create(lineService.handleCallback(callback))
+        StepVerifier.create(lineService.handleCallback(toCallbackRequest(req)))
                     .expectComplete()
                     .verify();
 
@@ -112,22 +97,11 @@ class LineServiceTest {
     }
 
     @Test
-    void testHandleCallback_shouldLimitMessagesInReplyMessage() throws Exception {
-        when(messageHandlerManager.handlers()).thenReturn(Collections.singletonList(new Echo6MessageHandler()));
+    void testHandleCallback_shouldFollowLimitOnMessagesPerReply() throws Exception {
+        final LineMessageRequest req = new LineMessageRequest("ping", "userId", "replyToken");
+        when(messageService.process(any())).thenReturn(Flux.just(MessageResponse.of(req, "PONG")).repeat(6));
 
-        final CallbackRequest callback =
-                CallbackRequest.builder()
-                               .events(Collections.singletonList(
-                                       MessageEvent.builder()
-                                                   .replyToken("replyToken")
-                                                   .source(UserSource.builder().userId("userId").build())
-                                                   .message(TextMessageContent.builder()
-                                                                              .text("echo6 hi")
-                                                                              .build())
-                                                   .build()))
-                               .build();
-
-        StepVerifier.create(lineService.handleCallback(callback))
+        StepVerifier.create(lineService.handleCallback(toCallbackRequest(req)))
                     .expectComplete()
                     .verify();
 
@@ -137,39 +111,20 @@ class LineServiceTest {
         assertThat(replyMessage.getValue().getReplyToken()).isEqualTo("replyToken");
         assertThat(replyMessage.getValue().getMessages().size()).isEqualTo(5);
         final TextMessage textMessage = (TextMessage) replyMessage.getValue().getMessages().get(0);
-        assertThat(textMessage.getText()).isEqualTo("hi");
+        assertThat(textMessage.getText()).isEqualTo("PONG");
     }
 
     @Test
-    void testHandleCallback_multipleMessageContexts() throws Exception {
-        when(messageHandlerManager.handlers()).thenReturn(
-                Arrays.asList(new PingMessageHandler(), new EchoMessageHandler(), new Echo5MessageHandler()));
+    void testHandleCallback_multipleLineMessageRequests() throws Exception {
+        final LineMessageRequest req1 = new LineMessageRequest("ping", "userId1", "replyToken1");
+        final LineMessageRequest req2 = new LineMessageRequest("ping", "userId2", "replyToken2");
+        final LineMessageRequest req3 = new LineMessageRequest("ping", "userId1", "replyToken3");
+        when(messageService.process(any())).thenReturn(
+                Flux.just(MessageResponse.of(req1, "PONG1")),
+                Flux.just(MessageResponse.of(req2, "PONG2")),
+                Flux.just(MessageResponse.of(req3, "PONG3")).repeat(5));
 
-        final CallbackRequest callback =
-                CallbackRequest.builder()
-                               .events(Arrays.asList(
-                                       MessageEvent.builder()
-                                                   .replyToken("replyToken1")
-                                                   .source(UserSource.builder().userId("userId1").build())
-                                                   .message(TextMessageContent.builder().text("ping").build())
-                                                   .build(),
-                                       MessageEvent.builder()
-                                                   .replyToken("replyToken2")
-                                                   .source(UserSource.builder().userId("userId2").build())
-                                                   .message(TextMessageContent.builder()
-                                                                              .text("echo hi")
-                                                                              .build())
-                                                   .build(),
-                                       MessageEvent.builder()
-                                                   .replyToken("replyToken3")
-                                                   .source(UserSource.builder().userId("userId1").build())
-                                                   .message(TextMessageContent.builder()
-                                                                              .text("echo5 hello")
-                                                                              .build())
-                                                   .build()))
-                               .build();
-
-        StepVerifier.create(lineService.handleCallback(callback))
+        StepVerifier.create(lineService.handleCallback(toCallbackRequest(List.of(req1, req2, req3))))
                     .expectComplete()
                     .verify();
 
@@ -179,17 +134,17 @@ class LineServiceTest {
         final ReplyMessage replyMessage1 = replyMessage.getAllValues().get(0);
         assertThat(replyMessage1.getReplyToken()).isEqualTo("replyToken1");
         final TextMessage textMessage1 = (TextMessage) replyMessage1.getMessages().get(0);
-        assertThat(textMessage1.getText()).isEqualTo("PONG");
+        assertThat(textMessage1.getText()).isEqualTo("PONG1");
 
         final ReplyMessage replyMessage2 = replyMessage.getAllValues().get(1);
         assertThat(replyMessage2.getReplyToken()).isEqualTo("replyToken2");
         final TextMessage textMessage2 = (TextMessage) replyMessage2.getMessages().get(0);
-        assertThat(textMessage2.getText()).isEqualTo("hi");
+        assertThat(textMessage2.getText()).isEqualTo("PONG2");
 
         final ReplyMessage replyMessage3 = replyMessage.getAllValues().get(2);
         assertThat(replyMessage3.getReplyToken()).isEqualTo("replyToken3");
         assertThat(replyMessage3.getMessages().size()).isEqualTo(5);
         final TextMessage textMessage3 = (TextMessage) replyMessage3.getMessages().get(0);
-        assertThat(textMessage3.getText()).isEqualTo("hello");
+        assertThat(textMessage3.getText()).isEqualTo("PONG3");
     }
 }

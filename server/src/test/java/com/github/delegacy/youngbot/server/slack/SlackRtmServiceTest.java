@@ -8,7 +8,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Duration;
-import java.util.Collections;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -18,8 +17,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.github.delegacy.youngbot.server.message.handler.MessageHandlerManager;
-import com.github.delegacy.youngbot.server.message.handler.PingMessageHandler;
+import com.github.delegacy.youngbot.server.message.MessageResponse;
+import com.github.delegacy.youngbot.server.message.service.MessageService;
 import com.slack.api.Slack;
 import com.slack.api.bolt.App;
 import com.slack.api.bolt.AppConfig;
@@ -30,13 +29,15 @@ import com.slack.api.rtm.RTMCloseHandler;
 import com.slack.api.rtm.RTMErrorHandler;
 import com.slack.api.rtm.RTMMessageHandler;
 
+import reactor.core.publisher.Flux;
+
 @ExtendWith(MockitoExtension.class)
 class SlackRtmServiceTest {
     @Mock
     private RTMClient rtmClient;
 
     @Mock
-    private MessageHandlerManager messageHandlerManager;
+    private MessageService messageService;
 
     @Mock
     private ScheduledExecutorService scheduledExecutorService;
@@ -50,7 +51,7 @@ class SlackRtmServiceTest {
         when(appConfig.getSingleTeamBotToken()).thenReturn("bot-token");
         when(slack.rtmConnect(anyString())).thenReturn(rtmClient);
 
-        slackRtmService = new SlackRtmService(app, messageHandlerManager, scheduledExecutorService);
+        slackRtmService = new SlackRtmService(app, messageService, scheduledExecutorService);
     }
 
     @Test
@@ -82,7 +83,8 @@ class SlackRtmServiceTest {
 
     @Test
     void testMessageEventHandler() throws Exception {
-        when(messageHandlerManager.handlers()).thenReturn(Collections.singletonList(new PingMessageHandler()));
+        when(messageService.process(any())).thenReturn(
+                Flux.just(MessageResponse.of(new SlackMessageRequest("ping", "channel"), "PONG")));
 
         final SlackRtmService.MessageEventHandler messageHandler = slackRtmService.new MessageEventHandler();
 

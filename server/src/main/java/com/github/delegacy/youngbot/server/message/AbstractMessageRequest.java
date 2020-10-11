@@ -7,14 +7,14 @@ import com.google.common.base.MoreObjects;
 /**
  * TBW.
  */
-public abstract class AbstractMessageContext implements MessageContext {
+public abstract class AbstractMessageRequest implements MessageRequest {
     private final String text;
 
-    private final String channelId;
+    private final String channel;
 
-    protected AbstractMessageContext(String text, String channelId) {
+    protected AbstractMessageRequest(String text, String channel) {
         this.text = requireNonNull(text, "text");
-        this.channelId = requireNonNull(channelId, "channelId");
+        this.channel = requireNonNull(channel, "channel");
     }
 
     @Override
@@ -23,15 +23,15 @@ public abstract class AbstractMessageContext implements MessageContext {
     }
 
     @Override
-    public String channelId() {
-        return channelId;
+    public String channel() {
+        return channel;
     }
 
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
                           .add("text", text)
-                          .add("channelId", channelId)
+                          .add("channel", channel)
                           .toString();
     }
 }
