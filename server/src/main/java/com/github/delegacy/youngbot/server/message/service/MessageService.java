@@ -31,6 +31,10 @@ public class MessageService {
      * TBW.
      */
     public Flux<MessageResponse> process(MessageRequest request) {
+        if (request.text().isEmpty()) {
+            return Flux.empty();
+        }
+
         return Flux.fromIterable(processors)
                    .flatMap(p -> {
                        final Matcher matcher = p.pattern().matcher(request.text());

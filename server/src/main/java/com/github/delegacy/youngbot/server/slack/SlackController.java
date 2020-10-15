@@ -1,6 +1,6 @@
 package com.github.delegacy.youngbot.server.slack;
 
-import static com.github.delegacy.youngbot.server.ReactorContextFilter.REACTOR_CONTEXT_KEY;
+import static com.github.delegacy.youngbot.server.web.ReactorContextFilter.REACTOR_CONTEXT_KEY;
 import static java.util.Objects.requireNonNull;
 
 import java.net.InetAddress;
