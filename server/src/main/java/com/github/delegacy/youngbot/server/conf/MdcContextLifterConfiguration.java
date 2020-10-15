@@ -10,7 +10,7 @@ import org.reactivestreams.Subscription;
 import org.slf4j.MDC;
 import org.springframework.context.annotation.Configuration;
 
-import com.github.delegacy.youngbot.server.ReactorContextFilter;
+import com.github.delegacy.youngbot.server.web.ReactorContextFilter;
 
 import reactor.core.CoreSubscriber;
 import reactor.core.publisher.Hooks;

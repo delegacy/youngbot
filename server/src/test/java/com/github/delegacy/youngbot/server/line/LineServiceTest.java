@@ -67,10 +67,6 @@ class LineServiceTest {
 
     @BeforeEach
     void beforeEach() throws Exception {
-        when(lineMessagingClient.replyMessage(any())).thenReturn(
-                CompletableFuture.completedFuture(
-                        new BotApiResponse(UUID.randomUUID().toString(), "message", Collections.emptyList())));
-
         when(lineMessagingClient.replyMessage(any())).thenAnswer(
                 m -> CompletableFuture.completedFuture(
                 new BotApiResponse(UUID.randomUUID().toString(), "message", Collections.emptyList())));

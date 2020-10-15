@@ -1,4 +1,4 @@
-package com.github.delegacy.youngbot.server;
+package com.github.delegacy.youngbot.server.web;
 
 import java.util.Random;
 

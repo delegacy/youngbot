@@ -1,6 +1,6 @@
 package com.github.delegacy.youngbot.server.slack;
 
-import static com.github.delegacy.youngbot.server.ReactorContextFilter.REQUEST_ID_KEY;
+import static com.github.delegacy.youngbot.server.web.ReactorContextFilter.REQUEST_ID_KEY;
 import static java.util.Objects.requireNonNull;
 
 import java.io.Closeable;

@@ -35,7 +35,7 @@ spring:
 
 logging:
   level:
-    com.github.delegacy.youngbot.server: INFO
+    com.github.delegacy.youngbot.server: DEBUG
     com.linecorp.bot.client.wire: WARN
 
 cloud:
@@ -63,3 +63,12 @@ management:
         enabled: false
         namespace: young-bot
         batchSize: 20
+
+---
+
+spring:
+  profiles: prod
+
+logging:
+  level:
+    com.github.delegacy.youngbot.server: INFO
