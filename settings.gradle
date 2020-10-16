@@ -1,4 +1,4 @@
-rootProject.name = 'young-bot'
+rootProject.name = 'youngbot'
 
 apply from: "${rootDir}/gradle/scripts/settings-flags.gradle"
 
