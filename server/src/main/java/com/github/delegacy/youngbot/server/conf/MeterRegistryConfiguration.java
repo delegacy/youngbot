@@ -17,6 +17,6 @@ public class MeterRegistryConfiguration {
     @Bean
     MeterRegistryCustomizer<MeterRegistry> metricsCommonTags() {
         return registry -> registry.config()
-                                   .commonTags(List.of(Tag.of("application", "young-bot-server")));
+                                   .commonTags(List.of(Tag.of("application", "youngbot-server")));
     }
 }

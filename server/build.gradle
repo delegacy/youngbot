@@ -1,5 +1,4 @@
 apply plugin: 'org.springframework.boot'
-apply plugin: 'com.bmuschko.docker-remote-api'
 
 dependencies {
     implementation project(':common')
@@ -33,35 +32,4 @@ bootJar {
 
 springBoot {
     buildInfo()
-}
-
-docker {
-    registryCredentials {
-        username = project.hasProperty('dockerUsername') ? dockerUsername : System.getenv('DOCKER_USERNAME')
-        password = project.hasProperty('dockerPassword') ? dockerPassword : System.getenv('DOCKER_PASSWORD')
-    }
-}
-
-task dockerUnpackDependencies(type: Copy) {
-    dependsOn bootJar
-    from(zipTree(tasks.bootJar.outputs.files.singleFile))
-    into("$buildDir/docker/dependency")
-}
-
-task dockerCopyDockerfile(type: Copy) {
-    from("$projectDir/Dockerfile")
-    into("$buildDir/docker")
-}
-
-import com.bmuschko.gradle.docker.tasks.image.*
-task dockerBuildImage(type: DockerBuildImage) {
-    dependsOn dockerCopyDockerfile, dockerUnpackDependencies
-    inputDir = file("$buildDir/docker")
-    buildArgs.put('DEPENDENCY', 'dependency')
-    images.add('delegacy/young-bot-server:latest')
-}
-
-task dockerPushImage(type: DockerPushImage) {
-    dependsOn dockerBuildImage
-    images.set(dockerBuildImage.images)
 }
