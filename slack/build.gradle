@@ -1,0 +1,9 @@
+dependencies {
+    api project(':web')
+
+    api 'com.slack.api:bolt'
+    implementation 'javax.websocket:javax.websocket-api'
+    runtimeOnly 'org.glassfish.tyrus.bundles:tyrus-standalone-client'
+
+    testRuntimeOnly 'org.springframework.boot:spring-boot-starter-reactor-netty'
+}

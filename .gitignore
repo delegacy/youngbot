@@ -10,15 +10,8 @@ build/
 *.ipr
 out/
 
-### Ansible ###
-*.retry
-ansible-playbook.log*
-
-### Python ###
-venv/
-
 ### Generated ###
 gen-src/
 
-### Heroku
-.env
+### SDKMAN ###
+.sdkmanrc

@@ -1,0 +1,9 @@
+dependencies {
+    api project(':web')
+    optionalApi project(':line')
+    optionalApi project(':slack')
+
+    api 'org.springframework.boot:spring-boot-starter-webflux'
+
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+}

@@ -1,0 +1,16 @@
+{
+  "events": [
+    {
+      "type": "message",
+      "replyToken": "replyToken1",
+      "source": { "userId": "userId1", "type": "user" },
+      "timestamp": 1558967195625,
+      "message": {
+        "type": "text",
+        "id": "9939046655736",
+        "text": "ping"
+      }
+    }
+  ],
+  "destination": "destination1"
+}

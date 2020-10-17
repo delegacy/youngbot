@@ -1,0 +1,7 @@
+dependencies {
+    api 'org.springframework:spring-webflux'
+
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+    testRuntimeOnly 'org.springframework.boot:spring-boot-starter-reactor-netty'
+}

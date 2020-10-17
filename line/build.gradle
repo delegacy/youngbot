@@ -1,0 +1,8 @@
+dependencies {
+    api project(':web')
+
+    api 'com.linecorp.bot:line-bot-api-client'
+    api 'com.linecorp.bot:line-bot-parser'
+
+    testRuntimeOnly 'org.springframework.boot:spring-boot-starter-reactor-netty'
+}
