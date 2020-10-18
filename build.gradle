@@ -9,10 +9,6 @@ buildscript {
     }
 }
 
-plugins {
-    id 'org.springframework.boot' version '2.3.4.RELEASE' apply false
-}
-
 allprojects {
     repositories {
         mavenCentral()
@@ -25,11 +21,20 @@ apply from: "${rootDir}/gradle/scripts/build-flags.gradle"
 configure(projectsWithFlags('java')) {
     // Common dependencies
     dependencies {
+        if (project != project(':core')) {
+            api project(':core')
+        }
+
+        // Guava
+        implementation 'com.google.guava:guava'
+
+        // Logging
+        implementation 'org.slf4j:slf4j-api'
+
         // JSR305
         implementation 'com.google.code.findbugs:jsr305'
-        
-        testImplementation 'org.springframework.boot:spring-boot-starter-test'
-        testRuntimeOnly 'org.springframework.boot:spring-boot-starter-reactor-netty'
+
+        testImplementation project(':testing-internal')
 
         testImplementation 'org.junit.jupiter:junit-jupiter-api'
         testImplementation 'org.junit.jupiter:junit-jupiter-params'
@@ -38,7 +43,7 @@ configure(projectsWithFlags('java')) {
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
         testRuntimeOnly 'org.junit.platform:junit-platform-engine'
 
-        testImplementation 'com.linecorp.armeria:armeria-junit5'
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
         testImplementation 'io.projectreactor:reactor-test'
         testImplementation 'org.mockito:mockito-junit-jupiter'
         testImplementation 'org.awaitility:awaitility'

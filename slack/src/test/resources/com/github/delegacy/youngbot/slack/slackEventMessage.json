@@ -1,0 +1,19 @@
+{
+  "token": "token1",
+  "team_id": "teamId",
+  "api_app_id": "apiAppId",
+  "event": {
+    "client_msg_id": "6f5994aa-6155-46d8-babb-413b70d07d6d",
+    "type": "message",
+    "text": "ping",
+    "user": "user1",
+    "ts": "1558965076.000200",
+    "channel": "channel1",
+    "event_ts": "1558965076.000200",
+    "channel_type": "im"
+  },
+  "type": "event_callback",
+  "event_id": "EvK0HLQSP6",
+  "event_time": 1558965076,
+  "authed_users": [ "authedUser" ]
+}

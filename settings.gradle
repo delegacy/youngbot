@@ -2,5 +2,16 @@ rootProject.name = 'youngbot'
 
 apply from: "${rootDir}/gradle/scripts/settings-flags.gradle"
 
-includeWithFlags ':common', 'java', 'publish'
-includeWithFlags ':server', 'java', 'publish'
+// Published BOM projects
+includeWithFlags ':bom', 'bom'
+
+// Published Java projects
+includeWithFlags ':core',                      'java', 'publish'
+includeWithFlags ':web',                       'java', 'publish'
+includeWithFlags ':line',                      'java', 'publish'
+includeWithFlags ':slack',                     'java', 'publish'
+includeWithFlags ':spring-boot:autoconfigure', 'java', 'publish'
+includeWithFlags ':spring-boot:starter',       'java', 'publish'
+
+// Unpublished Java projects
+includeWithFlags ':testing-internal', 'java'
