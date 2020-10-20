@@ -1,14 +1,18 @@
 package com.github.delegacy.youngbot.slack;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -62,23 +66,55 @@ class SlackRtmServiceTest {
         verify(rtmClient).reconnect();
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Test
-    void testHelloEventHandler() throws Exception {
+    void testHelloEventHandler_whenPingTaskIsNull(@Mock ScheduledFuture future) throws Exception {
         final SlackRtmService.HelloEventHandler helloEventHandler = slackRtmService.new HelloEventHandler();
+        when(scheduledExecutorService.scheduleAtFixedRate(
+                any(SlackRtmService.PingTask.class), anyLong(), anyLong(), any(TimeUnit.class)))
+                .thenReturn(future);
 
         helloEventHandler.handle(new HelloEvent());
 
+        assertThat(slackRtmService.sessionClosed).isFalse();
         verify(scheduledExecutorService).scheduleAtFixedRate(
                 any(SlackRtmService.PingTask.class), anyLong(), anyLong(), any(TimeUnit.class));
+        assertThat(slackRtmService.pingTaskFuture == future).isTrue();
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Test
+    void testHelloEventHandler_whenPingTaskIsNotNull(@Mock ScheduledFuture future) throws Exception {
+        final SlackRtmService.HelloEventHandler helloEventHandler = slackRtmService.new HelloEventHandler();
+        slackRtmService.pingTaskFuture = future;
+
+        helloEventHandler.handle(new HelloEvent());
+
+        assertThat(slackRtmService.sessionClosed).isFalse();
+        verify(scheduledExecutorService, never()).scheduleAtFixedRate(
+                any(SlackRtmService.PingTask.class), anyLong(), anyLong(), any(TimeUnit.class));
+        assertThat(slackRtmService.pingTaskFuture == future).isTrue();
     }
 
     @Test
-    void testPingTask() throws Exception {
+    void testPingTask_whenSessionIsOpen() throws Exception {
         final SlackRtmService.PingTask pingTask = slackRtmService.new PingTask();
+        slackRtmService.sessionClosed = false;
 
         pingTask.run();
 
         verify(rtmClient).sendMessage(anyString());
+    }
+
+    @Test
+    void testPingTask_whenSessionIsClosed() throws Exception {
+        final SlackRtmService.PingTask pingTask = slackRtmService.new PingTask();
+        slackRtmService.sessionClosed = true;
+
+        pingTask.run();
+
+        // 1 from configureRtmClient, 1 from pingTask
+        verify(rtmClient, times(2)).reconnect();
     }
 
     @Test
