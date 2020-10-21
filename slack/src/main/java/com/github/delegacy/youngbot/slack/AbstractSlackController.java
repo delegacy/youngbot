@@ -53,8 +53,8 @@ public abstract class AbstractSlackController {
     /**
      * TBW.
      */
-    @PostMapping("/event")
-    public Mono<ResponseEntity<String>> onEvent(RequestEntity<String> request, ServerWebExchange exchange) {
+    @PostMapping("${youngbot.slack.webhookPath:/api/slack/v1/webhook}")
+    public Mono<ResponseEntity<String>> onWebhook(RequestEntity<String> request, ServerWebExchange exchange) {
         return slackAppService.run(buildSlackRequest(request, exchange))
                               .map(res -> {
                                   final HttpHeaders resHeaders = toHttpHeaders(res.getHeaders());

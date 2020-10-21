@@ -2,3 +2,4 @@ youngbot:
   line:
     channel-token: channelToken
     channel-secret: channelSecret
+    webhook-path: /api/line/v1/webhook

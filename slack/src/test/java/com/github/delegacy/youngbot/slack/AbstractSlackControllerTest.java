@@ -17,7 +17,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.BodyInserters;
 
@@ -36,7 +35,6 @@ import com.slack.api.bolt.response.Response;
 @WebFluxTest(AbstractSlackControllerTest.SlackController.class)
 class AbstractSlackControllerTest {
     @RestController
-    @RequestMapping("/api/slack/v1")
     static class SlackController extends AbstractSlackController {
         @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
         SlackController(SlackAppBlockingService slackAppBlockingService) {
@@ -57,7 +55,7 @@ class AbstractSlackControllerTest {
 
     @Test
     void testMessageEvent(@TextFile("slackEventMessage.json") String json) throws Exception {
-        webClient.post().uri("/api/slack/v1/event")
+        webClient.post().uri("/api/slack/v1/webhook")
                  .body(BodyInserters.fromValue(json))
                  .exchange()
                  .expectStatus().isOk();
@@ -74,7 +72,7 @@ class AbstractSlackControllerTest {
     void testInternalError(@TextFile("slackEventMessage.json") String json) throws Exception {
         when(slackAppBlockingService.run(any(Request.class))).thenThrow(RuntimeException.class);
 
-        webClient.post().uri("/api/slack/v1/event")
+        webClient.post().uri("/api/slack/v1/webhook")
                  .body(BodyInserters.fromValue(json))
                  .exchange()
                  .expectStatus().is5xxServerError();

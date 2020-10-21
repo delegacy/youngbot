@@ -37,7 +37,7 @@ public abstract class AbstractMessageController {
     /**
      * TBW.
      */
-    @PostMapping("/webhook")
+    @PostMapping("${youngbot.webhookPath:/api/message/v1/webhook}")
     public Mono<List<WebhookResponse>> onWebhook(@RequestBody Mono<WebhookRequest> request,
                                                  ServerWebExchange exchange) {
         return request.map(req -> MessageRequest.of(req.getText(), exchange.getRequest().getId()))

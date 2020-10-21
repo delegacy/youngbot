@@ -16,7 +16,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.BodyInserters;
 
@@ -37,7 +36,6 @@ import reactor.core.publisher.Flux;
 @WebFluxTest(AbstractLineControllerTest.LineController.class)
 class AbstractLineControllerTest {
     @RestController
-    @RequestMapping("/api/line/v1")
     static class LineController extends AbstractLineController {
         @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
         protected LineController(LineService lineService, LineSignatureValidator lineSignatureValidator) {

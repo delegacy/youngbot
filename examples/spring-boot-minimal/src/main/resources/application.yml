@@ -1,0 +1,2 @@
+youngbot:
+  webhook-path: /api/message/v1/webhook
