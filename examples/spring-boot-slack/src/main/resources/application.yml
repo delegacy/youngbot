@@ -4,3 +4,4 @@ youngbot:
     signing-secret: signingSecret
     rtm:
       enabled: false
+    webhook-path: /api/slack/v1/webhook

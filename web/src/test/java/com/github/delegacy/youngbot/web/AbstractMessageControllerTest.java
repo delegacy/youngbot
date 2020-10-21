@@ -14,7 +14,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.BodyInserters;
 
@@ -27,13 +26,12 @@ import reactor.core.publisher.Flux;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = TestConfiguration.class)
-@WebFluxTest(MessageControllerTest.TestMessageController.class)
-class MessageControllerTest {
+@WebFluxTest(AbstractMessageControllerTest.MessageController.class)
+class AbstractMessageControllerTest {
     @RestController
-    @RequestMapping("/api/message/v1")
-    static class TestMessageController extends AbstractMessageController {
+    static class MessageController extends AbstractMessageController {
         @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-        protected TestMessageController(MessageService messageService) {
+        protected MessageController(MessageService messageService) {
             super(messageService);
         }
     }

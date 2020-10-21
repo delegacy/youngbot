@@ -44,7 +44,7 @@ public abstract class AbstractLineController {
      * @throws IOException TBW
      * @throws WebhookParseException TBW
      */
-    @PostMapping("/webhook")
+    @PostMapping("${youngbot.line.webhookPath:/api/line/v1/webhook}")
     public ResponseEntity<Void> onWebhook(RequestEntity<String> request)
             throws IOException, WebhookParseException {
         final CallbackRequest callback = buildCallbackRequest(request);

@@ -19,6 +19,8 @@ public class YoungBotSettings {
 
         private String channelSecret = "";
 
+        private String webhookPath = "/api/line/v1/webhook";
+
         /**
          * TBW.
          */
@@ -45,6 +47,20 @@ public class YoungBotSettings {
          */
         public void setChannelSecret(String channelSecret) {
             this.channelSecret = requireNonNull(channelSecret, "channelSecret");
+        }
+
+        /**
+         * TBW.
+         */
+        public String getWebhookPath() {
+            return webhookPath;
+        }
+
+        /**
+         * TBW.
+         */
+        public void setWebhookPath(String webhookPath) {
+            this.webhookPath = webhookPath;
         }
     }
 
@@ -76,6 +92,8 @@ public class YoungBotSettings {
         private String botToken = "";
 
         private String signingSecret = "";
+
+        private String webhookPath = "/api/slack/v1/webhook";
 
         private Rtm rtm = new Rtm();
 
@@ -110,6 +128,20 @@ public class YoungBotSettings {
         /**
          * TBW.
          */
+        public String getWebhookPath() {
+            return webhookPath;
+        }
+
+        /**
+         * TBW.
+         */
+        public void setWebhookPath(String webhookPath) {
+            this.webhookPath = webhookPath;
+        }
+
+        /**
+         * TBW.
+         */
         public Rtm getRtm() {
             return rtm;
         }
@@ -127,6 +159,8 @@ public class YoungBotSettings {
 
     @Nullable
     private Slack slack;
+
+    private String webhookPath = "/api/message/v1/webhook";
 
     /**
      * TBW.
@@ -156,5 +190,19 @@ public class YoungBotSettings {
      */
     public void setSlack(Slack slack) {
         this.slack = requireNonNull(slack, "slack");
+    }
+
+    /**
+     * TBW.
+     */
+    public String getWebhookPath() {
+        return webhookPath;
+    }
+
+    /**
+     * TBW.
+     */
+    public void setWebhookPath(String webhookPath) {
+        this.webhookPath = webhookPath;
     }
 }
