@@ -1,0 +1,4 @@
+youngbot:
+  line:
+    channel-token: channelToken
+    channel-secret: channelSecret

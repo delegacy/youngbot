@@ -1,0 +1,6 @@
+youngbot:
+  slack:
+    bot-token: botToken
+    signing-secret: signingSecret
+    rtm:
+      enabled: false
