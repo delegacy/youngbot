@@ -66,7 +66,7 @@ class SlackAppBlockingServiceTest {
         chatPostMessageResponse.setOk(true);
 
         when(messageService.process(any())).thenReturn(
-                Flux.just(MessageResponse.of(new SlackMessageRequest("ping", "channel", "thread"), "PONG")));
+                Flux.just(MessageResponse.of(SlackMessageRequest.of(event.getEvent()), "PONG")));
         when(ctx.say(any(BuilderConfigurator.class))).thenReturn(chatPostMessageResponse);
         when(ctx.ack()).thenReturn(Response.ok());
 

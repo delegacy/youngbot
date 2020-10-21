@@ -5,6 +5,7 @@ import static java.util.Objects.requireNonNull;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.time.Duration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -31,6 +32,9 @@ import com.slack.api.rtm.RTMEventsDispatcherFactory;
 import com.slack.api.rtm.message.Message;
 import com.slack.api.rtm.message.PingMessage;
 
+import io.github.resilience4j.ratelimiter.RateLimiter;
+import io.github.resilience4j.ratelimiter.RateLimiterConfig;
+import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
@@ -48,6 +52,22 @@ public class SlackRtmService implements Closeable {
 
     private final MessageService messageService;
 
+    // Respect the rate limit for write, https://api.slack.com/docs/rate-limits#rtm
+    private final RateLimiter rateLimiterWrite =
+            RateLimiter.of("write",
+                           RateLimiterConfig.custom()
+                                            .limitForPeriod(1)
+                                            .limitRefreshPeriod(Duration.ofSeconds(1))
+                                            .build());
+
+    // Respect the rate limit for reconnect, https://api.slack.com/docs/rate-limits#rtm
+    private final RateLimiter rateLimiterReconnect =
+            RateLimiter.of("reconnect",
+                           RateLimiterConfig.custom()
+                                            .limitForPeriod(1)
+                                            .limitRefreshPeriod(Duration.ofMinutes(1))
+                                            .build());
+
     @VisibleForTesting
     volatile boolean sessionClosed = true;
 
@@ -64,12 +84,8 @@ public class SlackRtmService implements Closeable {
         this(app, messageService, Executors.newSingleThreadScheduledExecutor());
     }
 
-    /**
-     * TBW.
-     *
-     * @throws Exception TBW
-     */
-    public SlackRtmService(App app, MessageService messageService, ScheduledExecutorService executorService)
+    @VisibleForTesting
+    SlackRtmService(App app, MessageService messageService, ScheduledExecutorService executorService)
             throws Exception {
         this.messageService = requireNonNull(messageService, "messageService");
         this.executorService = requireNonNull(executorService, "executorService");
@@ -111,9 +127,8 @@ public class SlackRtmService implements Closeable {
             sessionClosed = false;
 
             if (pingTaskFuture == null) {
-                // Respect the rate limit for reconnect, https://api.slack.com/docs/rate-limits#rtm
-                pingTaskFuture = executorService.scheduleAtFixedRate(
-                        new PingTask(), 1L, 60L, TimeUnit.SECONDS);
+                pingTaskFuture = executorService.scheduleWithFixedDelay(
+                        new PingTask(), 1L, 30L, TimeUnit.SECONDS);
             }
         }
     }
@@ -122,9 +137,15 @@ public class SlackRtmService implements Closeable {
         @Override
         public void run() {
             if (sessionClosed) {
+                if (!rateLimiterReconnect.acquirePermission()) {
+                    logger.warn("Failed to acquire permission from the rate limiter");
+                    return;
+                }
+
                 try {
                     rtmClient.reconnect();
-                } catch (IOException | SlackApiException | URISyntaxException | DeploymentException e) {
+                } catch (IOException | SlackApiException | URISyntaxException | DeploymentException |
+                        RuntimeException e) {
                     logger.warn("Failed to reconnect to Slack", e);
                 }
             } else {
@@ -145,28 +166,58 @@ public class SlackRtmService implements Closeable {
         public void handle(MessageEvent event) {
             logger.debug("Received text<{}> from channel<{}>", event.getText(), event.getChannel());
 
-            final SlackMessageRequest msgReq =
-                    new SlackMessageRequest(event.getText(), event.getChannel());
+            final SlackMessageRequest msgReq = SlackMessageRequest.of(event);
 
             messageService.process(msgReq)
                           .flatMap(res -> replyMessage(msgReq, res.text()))
-                          .subscribeOn(Schedulers.boundedElastic())
                           .subscribe(null,
                                      t -> logger.error("Failed to handle event<{}>", event, t));
         }
 
         private Mono<Void> replyMessage(SlackMessageRequest msgReq, String res) {
-            return Mono.fromRunnable(() -> {
-                final long id = msgId.incrementAndGet();
-                rtmClient.sendMessage(Message.builder()
-                                             .id(id)
-                                             .channel(msgReq.channel())
-                                             .text(res)
-                                             .build()
-                                             .toJSONString());
+            return Mono.fromRunnable(
+                    () -> {
+                        final long id = msgId.incrementAndGet();
+                        rtmClient.sendMessage(
+                                new MessageWithThreadTs(Message.builder()
+                                                               .id(id)
+                                                               .channel(msgReq.channel())
+                                                               .text(res)
+                                                               .build(),
+                                                        msgReq.thread()).toJSONString());
 
-                logger.debug("Replied to text<{}> in channel<{}>;id<{}>", msgReq.text(), msgReq.channel(), id);
-            });
+                        logger.debug("Replied to text<{}> in channel<{}>;id<{}>",
+                                     msgReq.text(), msgReq.channel(), id);
+                    })
+                       .transformDeferred(RateLimiterOperator.of(rateLimiterWrite))
+                       .then()
+                       .subscribeOn(Schedulers.boundedElastic());
+        }
+    }
+
+    /**
+     * TBW.
+     */
+    public static final class MessageWithThreadTs extends Message {
+        @Nullable
+        private final String threadTs;
+
+        /**
+         * TBW.
+         */
+        public MessageWithThreadTs(Message message, @Nullable String threadTs) {
+            super(message.getId(), message.getChannel(), message.getText(),
+                  message.getBlocks(), message.getAttachments());
+
+            this.threadTs = threadTs;
+        }
+
+        /**
+         * TBW.
+         */
+        @Nullable
+        public String getThreadTs() {
+            return threadTs;
         }
     }
 }

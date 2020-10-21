@@ -1,28 +1,29 @@
 package com.github.delegacy.youngbot.slack;
 
-import javax.annotation.Nullable;
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static java.util.Objects.requireNonNull;
 
 import com.github.delegacy.youngbot.message.AbstractMessageRequest;
 import com.google.common.base.MoreObjects;
+import com.slack.api.model.event.MessageEvent;
 
 /**
  * TBW.
  */
-public class SlackMessageRequest extends AbstractMessageRequest {
-    @Nullable
-    private final String thread;
-
+public final class SlackMessageRequest extends AbstractMessageRequest {
     /**
      * TBW.
      */
-    public SlackMessageRequest(String text, String channel) {
-        this(text, channel, null);
+    public static SlackMessageRequest of(MessageEvent messageEvent) {
+        requireNonNull(messageEvent, "messageEvent");
+
+        return new SlackMessageRequest(messageEvent.getText(), messageEvent.getChannel(),
+                                       firstNonNull(messageEvent.getThreadTs(), messageEvent.getTs()));
     }
 
-    /**
-     * TBW.
-     */
-    public SlackMessageRequest(String text, String channel, @Nullable String thread) {
+    private final String thread;
+
+    private SlackMessageRequest(String text, String channel, String thread) {
         super(text, channel);
 
         this.thread = thread;
@@ -31,7 +32,6 @@ public class SlackMessageRequest extends AbstractMessageRequest {
     /**
      * TBW.
      */
-    @Nullable
     public String thread() {
         return thread;
     }

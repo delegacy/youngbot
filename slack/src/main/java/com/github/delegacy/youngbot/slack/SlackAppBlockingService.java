@@ -1,6 +1,5 @@
 package com.github.delegacy.youngbot.slack;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Objects.requireNonNull;
 
 import java.io.IOException;
@@ -58,9 +57,7 @@ class SlackAppBlockingService {
             final MessageEvent msgEvent = event.getEvent();
             logger.debug("Received text<{}> from channel<{}>", msgEvent.getText(), msgEvent.getChannel());
 
-            final SlackMessageRequest msgReq =
-                    new SlackMessageRequest(msgEvent.getText(), msgEvent.getChannel(),
-                                            firstNonNull(msgEvent.getThreadTs(), msgEvent.getTs()));
+            final SlackMessageRequest msgReq = SlackMessageRequest.of(msgEvent);
             messageService.process(msgReq)
                           .flatMap(res -> Mono.fromCallable(
                                   () -> ctx.say(b -> b.channel(msgReq.channel())
