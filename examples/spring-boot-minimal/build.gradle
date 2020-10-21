@@ -1,0 +1,6 @@
+dependencies {
+    implementation project(':spring-boot:starter')
+
+    runtimeOnly 'org.slf4j:log4j-over-slf4j'
+    runtimeOnly 'ch.qos.logback:logback-classic'
+}

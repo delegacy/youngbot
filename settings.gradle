@@ -15,3 +15,8 @@ includeWithFlags ':spring-boot:starter',       'java', 'publish'
 
 // Unpublished Java projects
 includeWithFlags ':testing-internal', 'java'
+
+// Examples
+includeWithFlags ':examples:spring-boot-minimal', 'java'
+includeWithFlags ':examples:spring-boot-line',    'java'
+includeWithFlags ':examples:spring-boot-slack',   'java'
