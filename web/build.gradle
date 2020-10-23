@@ -1,5 +1,6 @@
 dependencies {
     api 'org.springframework:spring-webflux'
+    api 'jakarta.annotation:jakarta.annotation-api'
 
     implementation 'com.fasterxml.jackson.core:jackson-databind'
 

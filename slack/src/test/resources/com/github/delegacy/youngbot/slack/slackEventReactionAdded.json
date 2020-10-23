@@ -1,0 +1,22 @@
+{
+  "token": "token1",
+  "team_id": "teamId",
+  "api_app_id": "apiAppId",
+  "event": {
+    "type": "reaction_added",
+    "user": "user1",
+    "item": {
+      "type": "message",
+      "channel": "channel1",
+      "ts": "1603437624.003700"
+    },
+    "reaction": "reaction",
+    "item_user": "itemUser",
+    "event_ts": "1603437926.004000",
+    "ts": "1603437926.004000"
+  },
+  "type": "event_callback",
+  "event_id": "EvK0HLQSP6",
+  "event_time": 1603437926,
+  "authed_users": [ "authedUser" ]
+}
