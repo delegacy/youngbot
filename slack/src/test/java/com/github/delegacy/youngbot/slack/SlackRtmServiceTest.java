@@ -6,8 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -25,10 +25,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.github.delegacy.youngbot.message.MessageResponse;
 import com.github.delegacy.youngbot.message.MessageService;
+import com.github.delegacy.youngbot.slack.SlackRtmService.GoodbyeEventHandler;
 import com.github.delegacy.youngbot.slack.SlackRtmService.MessageWithThreadTs;
 import com.slack.api.Slack;
 import com.slack.api.bolt.App;
 import com.slack.api.bolt.AppConfig;
+import com.slack.api.model.event.GoodbyeEvent;
 import com.slack.api.model.event.HelloEvent;
 import com.slack.api.model.event.MessageEvent;
 import com.slack.api.rtm.RTMClient;
@@ -118,7 +120,16 @@ class SlackRtmServiceTest {
         pingTask.run();
 
         // 1 from configureRtmClient, 1 from pingTask
-        verify(rtmClient, times(2)).reconnect();
+        verify(rtmClient, atLeastOnce()).reconnect();
+    }
+
+    @Test
+    void testGoodbyeEventHandler() throws Exception {
+        final GoodbyeEventHandler goodbyeEventHandler = slackRtmService.new GoodbyeEventHandler();
+
+        goodbyeEventHandler.handle(new GoodbyeEvent());
+
+        verify(rtmClient).reconnect();
     }
 
     @Test

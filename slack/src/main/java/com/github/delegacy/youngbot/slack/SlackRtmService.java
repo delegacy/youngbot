@@ -23,6 +23,7 @@ import com.github.delegacy.youngbot.message.MessageService;
 import com.google.common.annotations.VisibleForTesting;
 import com.slack.api.bolt.App;
 import com.slack.api.methods.SlackApiException;
+import com.slack.api.model.event.GoodbyeEvent;
 import com.slack.api.model.event.HelloEvent;
 import com.slack.api.model.event.MessageEvent;
 import com.slack.api.rtm.RTMClient;
@@ -98,6 +99,7 @@ public class SlackRtmService implements Closeable {
         final RTMEventsDispatcher dispatcher = RTMEventsDispatcherFactory.getInstance();
         dispatcher.register(new HelloEventHandler());
         dispatcher.register(new MessageEventHandler());
+        dispatcher.register(new GoodbyeEventHandler());
 
         rtmClient.addMessageHandler(dispatcher.toMessageHandler());
         rtmClient.addErrorHandler(t -> logger.warn("A RTM session error occurred.", t));
@@ -111,7 +113,7 @@ public class SlackRtmService implements Closeable {
             sessionClosed = true;
         });
 
-        rtmClient.reconnect();
+        reconnect();
     }
 
     @Override
@@ -119,6 +121,20 @@ public class SlackRtmService implements Closeable {
         executorService.shutdown();
 
         rtmClient.close();
+    }
+
+    private void reconnect() {
+        if (!rateLimiterReconnect.acquirePermission()) {
+            logger.warn("Failed to acquire permission from the rate limiter");
+            return;
+        }
+
+        try {
+            rtmClient.reconnect();
+        } catch (IOException | SlackApiException | URISyntaxException | DeploymentException |
+                RuntimeException e) {
+            logger.warn("Failed to reconnect to Slack", e);
+        }
     }
 
     class HelloEventHandler extends RTMEventHandler<HelloEvent> {
@@ -137,17 +153,7 @@ public class SlackRtmService implements Closeable {
         @Override
         public void run() {
             if (sessionClosed) {
-                if (!rateLimiterReconnect.acquirePermission()) {
-                    logger.warn("Failed to acquire permission from the rate limiter");
-                    return;
-                }
-
-                try {
-                    rtmClient.reconnect();
-                } catch (IOException | SlackApiException | URISyntaxException | DeploymentException |
-                        RuntimeException e) {
-                    logger.warn("Failed to reconnect to Slack", e);
-                }
+                reconnect();
             } else {
                 try {
                     rtmClient.sendMessage(PingMessage.builder()
@@ -158,6 +164,13 @@ public class SlackRtmService implements Closeable {
                     logger.warn("Failed to ping Slack", e);
                 }
             }
+        }
+    }
+
+    class GoodbyeEventHandler extends RTMEventHandler<GoodbyeEvent> {
+        @Override
+        public void handle(GoodbyeEvent event) {
+            reconnect();
         }
     }
 
