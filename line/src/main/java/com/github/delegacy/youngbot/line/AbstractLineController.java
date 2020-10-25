@@ -43,10 +43,10 @@ public abstract class AbstractLineController {
     /**
      * TBW.
      */
-    @PostMapping("${youngbot.line.webhookPath:/api/line/v1/webhook}")
+    @PostMapping("${youngbot.line.webhook-path:/api/line/v1/webhook}")
     public void onWebhook(RequestEntity<String> request) {
         buildCallbackRequest(request)
-                .map(lineService::handleCallback)
+                .flatMap(lineService::handleCallback)
                 .subscribe(null, t -> logger.error("Failed to handle callback", t));
     }
 

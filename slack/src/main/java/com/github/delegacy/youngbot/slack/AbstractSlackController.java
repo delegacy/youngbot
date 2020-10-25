@@ -75,7 +75,7 @@ public abstract class AbstractSlackController {
     /**
      * TBW.
      */
-    @PostMapping("${youngbot.slack.webhookPath:/api/slack/v1/webhook}")
+    @PostMapping("${youngbot.slack.webhook-path:/api/slack/v1/webhook}")
     public Mono<ResponseEntity<String>> onWebhook(RequestEntity<String> request, ServerWebExchange exchange) {
         return buildSlackRequest(request, exchange)
                 .flatMap(slackAppService::run)
