@@ -9,18 +9,18 @@ public interface MessageRequest {
     /**
      * TBW.
      */
-    static MessageRequest of(String text, String channel) {
-        return new DefaultMessageRequest(requireNonNull(text, "text"),
-                                         requireNonNull(channel, "channel"));
+    static MessageRequest of(String channel, String text) {
+        return new DefaultMessageRequest(requireNonNull(channel, "channel"),
+                                         requireNonNull(text, "text"));
     }
 
     /**
      * TBW.
      */
-    String text();
+    String channel();
 
     /**
      * TBW.
      */
-    String channel();
+    String text();
 }

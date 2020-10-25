@@ -40,7 +40,7 @@ public abstract class AbstractMessageController {
     @PostMapping("${youngbot.webhookPath:/api/message/v1/webhook}")
     public Mono<List<WebhookResponse>> onWebhook(@RequestBody Mono<WebhookRequest> request,
                                                  ServerWebExchange exchange) {
-        return request.map(req -> MessageRequest.of(req.getText(), exchange.getRequest().getId()))
+        return request.map(req -> MessageRequest.of(exchange.getRequest().getId(), req.getText()))
                       .flatMapMany(messageService::process)
                       .map(WebhookResponse::new)
                       .collectList();

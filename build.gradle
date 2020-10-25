@@ -42,6 +42,7 @@ configure(projectsWithFlags('java')) {
         testRuntimeOnly 'org.junit.platform:junit-platform-commons'
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
         testRuntimeOnly 'org.junit.platform:junit-platform-engine'
+        testRuntimeOnly 'io.projectreactor.tools:blockhound-junit-platform'
 
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
         testImplementation 'io.projectreactor:reactor-test'

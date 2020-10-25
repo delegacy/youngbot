@@ -17,31 +17,31 @@ public final class SlackMessageRequest extends AbstractMessageRequest {
     public static SlackMessageRequest of(MessageEvent messageEvent) {
         requireNonNull(messageEvent, "messageEvent");
 
-        return new SlackMessageRequest(messageEvent.getText(), messageEvent.getChannel(),
+        return new SlackMessageRequest(messageEvent.getChannel(), messageEvent.getText(),
                                        firstNonNull(messageEvent.getThreadTs(), messageEvent.getTs()));
     }
 
-    private final String thread;
+    private final String threadTs;
 
-    private SlackMessageRequest(String text, String channel, String thread) {
-        super(text, channel);
+    private SlackMessageRequest(String channel, String text, String threadTs) {
+        super(channel, text);
 
-        this.thread = thread;
+        this.threadTs = threadTs;
     }
 
     /**
      * TBW.
      */
-    public String thread() {
-        return thread;
+    public String threadTs() {
+        return threadTs;
     }
 
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                          .add("text", text())
                           .add("channel", channel())
-                          .add("thread", thread)
+                          .add("text", text())
+                          .add("threadTs", threadTs)
                           .toString();
     }
 }

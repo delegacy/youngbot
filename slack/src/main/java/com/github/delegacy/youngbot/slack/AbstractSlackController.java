@@ -37,58 +37,6 @@ import reactor.core.publisher.Mono;
 public abstract class AbstractSlackController {
     private static final Logger logger = LoggerFactory.getLogger(AbstractSlackController.class);
 
-    private final SlackAppService slackAppService;
-
-    private final SlackRequestParser requestParser;
-
-    /**
-     * TBW.
-     */
-    protected AbstractSlackController(App app, SlackAppService slackAppService) {
-        this.slackAppService = requireNonNull(slackAppService, "slackAppService");
-
-        requestParser = new SlackRequestParser(requireNonNull(app, "app").config());
-    }
-
-    /**
-     * TBW.
-     */
-    @PostMapping("${youngbot.slack.webhookPath:/api/slack/v1/webhook}")
-    public Mono<ResponseEntity<String>> onWebhook(RequestEntity<String> request, ServerWebExchange exchange) {
-        return slackAppService.run(buildSlackRequest(request, exchange))
-                              .map(res -> {
-                                  final HttpHeaders resHeaders = toHttpHeaders(res.getHeaders());
-                                  resHeaders.add(HttpHeaders.CONTENT_TYPE, res.getContentType());
-
-                                  return ResponseEntity.status(res.getStatusCode())
-                                                       .headers(resHeaders)
-                                                       .body(res.getBody());
-                              })
-                              .onErrorResume(t -> {
-                                  logger.error("Failed to handle request<{}>", request, t);
-
-                                  return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                                                 .contentType(MediaType.APPLICATION_JSON)
-                                                                 .body("{\"error\":\"Something is wrong.\"}"));
-                              });
-    }
-
-    private Request<?> buildSlackRequest(RequestEntity<String> request, ServerWebExchange exchange) {
-        final String requestBody = request.getBody();
-        final RequestHeaders headers = new RequestHeaders(toHeaderMap(request.getHeaders()));
-
-        final SlackRequestParser.HttpRequest rawRequest =
-                SlackRequestParser.HttpRequest.builder()
-                                              .requestUri(request.getUrl().getPath())
-                                              .queryString(QueryStringParser.toMap(request.getUrl().getQuery()))
-                                              .headers(headers)
-                                              .requestBody(requestBody)
-                                              .remoteAddress(toRemoteAddress(exchange.getRequest()))
-                                              .build();
-
-        return requestParser.parse(rawRequest);
-    }
-
     private static Map<String, List<String>> toHeaderMap(HttpHeaders httpHeaders) {
         return httpHeaders.entrySet().stream()
                           .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
@@ -109,5 +57,61 @@ public abstract class AbstractSlackController {
             return null;
         }
         return inetAddress.getHostAddress();
+    }
+
+    private final SlackAppService slackAppService;
+
+    private final SlackRequestParser requestParser;
+
+    /**
+     * TBW.
+     */
+    protected AbstractSlackController(App app, SlackAppService slackAppService) {
+        this.slackAppService = requireNonNull(slackAppService, "slackAppService");
+
+        requestParser = new SlackRequestParser(requireNonNull(app, "app").config());
+    }
+
+    /**
+     * TBW.
+     */
+    @PostMapping("${youngbot.slack.webhookPath:/api/slack/v1/webhook}")
+    public Mono<ResponseEntity<String>> onWebhook(RequestEntity<String> request, ServerWebExchange exchange) {
+        return buildSlackRequest(request, exchange)
+                .flatMap(slackAppService::run)
+                .map(res -> {
+                    final HttpHeaders resHeaders = toHttpHeaders(res.getHeaders());
+                    resHeaders.add(HttpHeaders.CONTENT_TYPE, res.getContentType());
+
+                    return ResponseEntity.status(res.getStatusCode())
+                                         .headers(resHeaders)
+                                         .body(res.getBody());
+                })
+                .onErrorResume(t -> {
+                    logger.error("Failed to handle request<{}>", request, t);
+
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                                   .contentType(MediaType.APPLICATION_JSON)
+                                                   .body("{\"error\":\"Something is wrong.\"}"));
+                });
+    }
+
+    private Mono<Request<?>> buildSlackRequest(RequestEntity<String> request, ServerWebExchange exchange) {
+        return Mono.fromSupplier(() -> {
+            final String requestBody = request.getBody();
+            final RequestHeaders headers = new RequestHeaders(toHeaderMap(request.getHeaders()));
+
+            final SlackRequestParser.HttpRequest rawRequest =
+                    SlackRequestParser.HttpRequest.builder()
+                                                  .requestUri(request.getUrl().getPath())
+                                                  .queryString(QueryStringParser.toMap(
+                                                          request.getUrl().getQuery()))
+                                                  .headers(headers)
+                                                  .requestBody(requestBody)
+                                                  .remoteAddress(toRemoteAddress(exchange.getRequest()))
+                                                  .build();
+
+            return requestParser.parse(rawRequest);
+        });
     }
 }

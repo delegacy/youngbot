@@ -76,7 +76,7 @@ class LineServiceTest {
 
     @Test
     void testHandleCallback() throws Exception {
-        final LineMessageRequest req = new LineMessageRequest("ping", "userId", "replyToken");
+        final LineMessageRequest req = new LineMessageRequest("userId", "ping", "replyToken");
         when(messageService.process(any())).thenReturn(Flux.just(MessageResponse.of(req, "PONG")));
 
         StepVerifier.create(lineService.handleCallback(toCallbackRequest(req)))
@@ -94,7 +94,7 @@ class LineServiceTest {
 
     @Test
     void testHandleCallback_shouldFollowLimitOnMessagesPerReply() throws Exception {
-        final LineMessageRequest req = new LineMessageRequest("ping", "userId", "replyToken");
+        final LineMessageRequest req = new LineMessageRequest("userId", "ping", "replyToken");
         when(messageService.process(any())).thenReturn(Flux.just(MessageResponse.of(req, "PONG")).repeat(6));
 
         StepVerifier.create(lineService.handleCallback(toCallbackRequest(req)))
@@ -112,9 +112,9 @@ class LineServiceTest {
 
     @Test
     void testHandleCallback_multipleLineMessageRequests() throws Exception {
-        final LineMessageRequest req1 = new LineMessageRequest("ping", "userId1", "replyToken1");
-        final LineMessageRequest req2 = new LineMessageRequest("ping", "userId2", "replyToken2");
-        final LineMessageRequest req3 = new LineMessageRequest("ping", "userId1", "replyToken3");
+        final LineMessageRequest req1 = new LineMessageRequest("userId1", "ping","replyToken1");
+        final LineMessageRequest req2 = new LineMessageRequest("userId2", "ping","replyToken2");
+        final LineMessageRequest req3 = new LineMessageRequest("userId1", "ping","replyToken3");
         when(messageService.process(any())).thenReturn(
                 Flux.just(MessageResponse.of(req1, "PONG1")),
                 Flux.just(MessageResponse.of(req2, "PONG2")),

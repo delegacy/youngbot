@@ -8,18 +8,13 @@ import com.google.common.base.MoreObjects;
  * TBW.
  */
 public abstract class AbstractMessageRequest implements MessageRequest {
-    private final String text;
-
     private final String channel;
 
-    protected AbstractMessageRequest(String text, String channel) {
-        this.text = requireNonNull(text, "text");
-        this.channel = requireNonNull(channel, "channel");
-    }
+    private final String text;
 
-    @Override
-    public String text() {
-        return text;
+    protected AbstractMessageRequest(String channel, String text) {
+        this.channel = requireNonNull(channel, "channel");
+        this.text = requireNonNull(text, "text");
     }
 
     @Override
@@ -28,10 +23,15 @@ public abstract class AbstractMessageRequest implements MessageRequest {
     }
 
     @Override
+    public String text() {
+        return text;
+    }
+
+    @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                          .add("text", text)
                           .add("channel", channel)
+                          .add("text", text)
                           .toString();
     }
 }

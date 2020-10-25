@@ -68,7 +68,7 @@ public class LineService {
                        final String channel = messageEvent.getSource().getSenderId();
                        logger.debug("Received text<{}> from channel<{}>", text, channel);
 
-                       return Mono.just(new LineMessageRequest(text, channel, messageEvent.getReplyToken()));
+                       return Mono.just(new LineMessageRequest(channel, text, messageEvent.getReplyToken()));
                    });
     }
 
