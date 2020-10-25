@@ -29,6 +29,8 @@ import com.slack.api.bolt.request.RequestType;
 import com.slack.api.bolt.request.builtin.EventRequest;
 import com.slack.api.bolt.response.Response;
 
+import reactor.core.publisher.Mono;
+
 @ExtendWith(SpringExtension.class)
 @ExtendWith(TextFileParameterResolver.class)
 @ContextConfiguration(classes = TestConfiguration.class)
@@ -37,8 +39,8 @@ class AbstractSlackControllerTest {
     @RestController
     static class SlackController extends AbstractSlackController {
         @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-        SlackController(SlackAppBlockingService slackAppBlockingService) {
-            super(new App(), new SlackAppService(slackAppBlockingService));
+        SlackController(SlackAppService slackAppService) {
+            super(new App(), slackAppService);
         }
     }
 
@@ -46,11 +48,11 @@ class AbstractSlackControllerTest {
     private WebTestClient webClient;
 
     @MockBean
-    private SlackAppBlockingService slackAppBlockingService;
+    private SlackAppService slackAppService;
 
     @BeforeEach
     void beforeEach() throws Exception {
-        when(slackAppBlockingService.run(any(Request.class))).thenReturn(Response.ok());
+        when(slackAppService.run(any(Request.class))).thenReturn(Mono.just(Response.ok()));
     }
 
     @Test
@@ -61,7 +63,7 @@ class AbstractSlackControllerTest {
                  .expectStatus().isOk();
 
         final ArgumentCaptor<EventRequest> reqCaptor = ArgumentCaptor.forClass(EventRequest.class);
-        verify(slackAppBlockingService, times(1)).run(reqCaptor.capture());
+        verify(slackAppService, times(1)).run(reqCaptor.capture());
 
         final EventRequest req = reqCaptor.getValue();
         assertThat(req.getRequestType()).isEqualTo(RequestType.Event);
@@ -70,7 +72,7 @@ class AbstractSlackControllerTest {
 
     @Test
     void testInternalError(@TextFile("slackEventMessage.json") String json) throws Exception {
-        when(slackAppBlockingService.run(any(Request.class))).thenThrow(RuntimeException.class);
+        when(slackAppService.run(any(Request.class))).thenReturn(Mono.error(new RuntimeException("oops")));
 
         webClient.post().uri("/api/slack/v1/webhook")
                  .body(BodyInserters.fromValue(json))
