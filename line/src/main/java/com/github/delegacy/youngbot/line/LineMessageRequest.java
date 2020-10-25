@@ -14,8 +14,8 @@ public class LineMessageRequest extends AbstractMessageRequest {
     /**
      * TBW.
      */
-    public LineMessageRequest(String text, String channel, String replyToken) {
-        super(text, channel);
+    public LineMessageRequest(String channel, String text, String replyToken) {
+        super(channel, text);
 
         this.replyToken = requireNonNull(replyToken, "replyToken");
     }
@@ -30,8 +30,8 @@ public class LineMessageRequest extends AbstractMessageRequest {
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                          .add("text", text())
                           .add("channel", channel())
+                          .add("text", text())
                           .add("replyToken", replyToken)
                           .toString();
     }

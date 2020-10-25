@@ -66,7 +66,7 @@ class SlackAppBlockingService {
 
             final SlackMessageRequest req = SlackMessageRequest.of(event);
             messageService.process(req)
-                          .flatMap(res -> slackClient.sendMessage(req.channel(), res.text(), req.thread()))
+                          .flatMap(res -> slackClient.sendMessage(req.channel(), res.text(), req.threadTs()))
                           .subscribe(null,
                                      t -> logger.error("Failed to handle event<{}>;ctx<{}>",
                                                        eventPayload, ctx, t));

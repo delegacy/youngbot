@@ -4,7 +4,7 @@ import com.github.delegacy.youngbot.message.MessageRequest;
 
 public final class TestUtils {
     public static MessageRequest msgReq(String text) {
-        return MessageRequest.of(text, "test");
+        return MessageRequest.of("channel", text);
     }
 
     private TestUtils() { /* noop */ }

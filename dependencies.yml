@@ -44,6 +44,10 @@ org.junit.platform:
   junit-platform-engine:
     version: *JUNIT_PLATFORM_VERSION
 
+io.projectreactor.tools:
+  blockhound-junit-platform:
+    version: '1.0.4.RELEASE'
+
 org.awaitility:
   awaitility:
     version: '4.0.3'

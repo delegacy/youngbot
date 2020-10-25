@@ -1,5 +1,6 @@
 package com.github.delegacy.youngbot.web;
 
+import static com.github.delegacy.youngbot.internal.testing.TestUtils.msgReq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.BodyInserters;
 
 import com.github.delegacy.youngbot.internal.testing.TestConfiguration;
-import com.github.delegacy.youngbot.message.MessageRequest;
 import com.github.delegacy.youngbot.message.MessageResponse;
 import com.github.delegacy.youngbot.message.MessageService;
 
@@ -45,7 +45,7 @@ class AbstractMessageControllerTest {
     @Test
     void testOnWebhook() {
         when(messageService.process(any())).thenReturn(
-                Flux.just(MessageResponse.of(MessageRequest.of("text", "channel"), "PONG")));
+                Flux.just(MessageResponse.of(msgReq("text"), "PONG")));
 
         webClient.post().uri("/api/message/v1/webhook")
                  .contentType(MediaType.APPLICATION_JSON)
@@ -59,8 +59,7 @@ class AbstractMessageControllerTest {
     @Test
     void testOnWebhook_multipleWebhookResponses() {
         when(messageService.process(any())).thenReturn(
-                Flux.just(MessageResponse.of(MessageRequest.of("text", "channel"), "PONG"))
-                    .repeat(2));
+                Flux.just(MessageResponse.of(msgReq("text"), "PONG")).repeat(2));
 
         webClient.post().uri("/api/message/v1/webhook")
                  .contentType(MediaType.APPLICATION_JSON)
