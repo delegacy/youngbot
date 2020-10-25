@@ -4,13 +4,13 @@ boms:
 
 com.linecorp.bot:
   line-bot-api-client:
-    version: &LINE_BOT_VERSION '4.1.0'
+    version: &LINE_BOT_VERSION '4.2.0'
   line-bot-parser:
     version: *LINE_BOT_VERSION
 
 com.slack.api:
   bolt:
-    version: '1.2.0'
+    version: '1.2.1'
 
 javax.websocket:
   javax.websocket-api:
@@ -22,7 +22,7 @@ org.glassfish.tyrus.bundles:
 
 com.google.guava:
   guava:
-    version: '29.0-jre'
+    version: '30.0-jre'
 
 com.google.code.findbugs:
   jsr305:
