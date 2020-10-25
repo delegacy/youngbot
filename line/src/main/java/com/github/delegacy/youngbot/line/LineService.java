@@ -44,9 +44,10 @@ public class LineService {
     /**
      * TBW.
      */
-    public Flux<Void> handleCallback(CallbackRequest callback) {
+    public Mono<Void> handleCallback(CallbackRequest callback) {
         return toMessageRequestFlux(callback)
-                .flatMap(this::handleMessage);
+                .flatMap(this::handleMessage)
+                .then();
     }
 
     private static Flux<LineMessageRequest> toMessageRequestFlux(CallbackRequest req) {

@@ -28,7 +28,7 @@ import com.linecorp.bot.model.event.MessageEvent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.parser.LineSignatureValidator;
 
-import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @ExtendWith(SpringExtension.class)
 @ExtendWith(TextFileParameterResolver.class)
@@ -55,7 +55,7 @@ class AbstractLineControllerTest {
     @BeforeEach
     void beforeEach() {
         when(lineSignatureValidator.validateSignature(any(), any())).thenReturn(true);
-        when(lineService.handleCallback(any())).thenReturn(Flux.empty());
+        when(lineService.handleCallback(any())).thenReturn(Mono.empty());
     }
 
     @Test
