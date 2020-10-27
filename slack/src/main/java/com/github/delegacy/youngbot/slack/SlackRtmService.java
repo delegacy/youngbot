@@ -42,7 +42,7 @@ import io.github.resilience4j.ratelimiter.RateLimiterConfig;
 public class SlackRtmService implements Closeable {
     private static final Logger logger = LoggerFactory.getLogger(SlackRtmService.class);
 
-    private final AtomicLong msgId = new AtomicLong();
+    private final AtomicLong rtmMessageId = new AtomicLong();
 
     private final ScheduledExecutorService executorService;
 
@@ -63,8 +63,6 @@ public class SlackRtmService implements Closeable {
                                             .limitForPeriod(1)
                                             .limitRefreshPeriod(Duration.ofMinutes(1))
                                             .build());
-
-    private volatile boolean sessionClosed = true;
 
     @Nullable
     private ScheduledFuture<?> pingTaskFuture;
@@ -115,20 +113,13 @@ public class SlackRtmService implements Closeable {
                 logger.error("The RTM session is closed because of {}.", reason);
             }
 
-            sessionClosed = true;
+            if (!executorService.isShutdown()) {
+                // Immediately ping for fast reconnection
+                executorService.submit(new PingTask());
+            }
         });
 
         reconnect();
-    }
-
-    @VisibleForTesting
-    boolean isSessionClosed() {
-        return sessionClosed;
-    }
-
-    @VisibleForTesting
-    void setSessionClosed(boolean sessionClosed) {
-        this.sessionClosed = sessionClosed;
     }
 
     @VisibleForTesting
@@ -179,11 +170,13 @@ public class SlackRtmService implements Closeable {
     class HelloEventHandler extends RTMEventHandler<HelloEvent> {
         @Override
         public void handle(HelloEvent event) {
-            sessionClosed = false;
+            logger.debug("Received hello");
 
-            if (pingTaskFuture == null) {
-                pingTaskFuture = executorService.scheduleWithFixedDelay(
-                        new PingTask(), 1L, 30L, TimeUnit.SECONDS);
+            synchronized (this) {
+                if (pingTaskFuture == null) {
+                    pingTaskFuture = executorService.scheduleWithFixedDelay(
+                            new PingTask(), 1L, 30L, TimeUnit.SECONDS);
+                }
             }
         }
     }
@@ -191,17 +184,19 @@ public class SlackRtmService implements Closeable {
     class PingTask implements Runnable {
         @Override
         public void run() {
-            if (sessionClosed) {
+            try {
+                rtmClient.sendMessage(PingMessage.builder()
+                                                 .id(rtmMessageId.incrementAndGet())
+                                                 .build()
+                                                 .toJSONString());
+            } catch (NullPointerException | IllegalStateException e) {
+                // Assuming that the session is instanceof TyrusSession
+                // and it is closed when these exceptions occur
+                logger.debug("The RTM session is closed, reconnecting to Slack", e);
+
                 reconnect();
-            } else {
-                try {
-                    rtmClient.sendMessage(PingMessage.builder()
-                                                     .id(msgId.incrementAndGet())
-                                                     .build()
-                                                     .toJSONString());
-                } catch (RuntimeException e) {
-                    logger.warn("Failed to ping Slack", e);
-                }
+            } catch (RuntimeException e) {
+                logger.warn("Failed to ping Slack", e);
             }
         }
     }
@@ -209,7 +204,13 @@ public class SlackRtmService implements Closeable {
     class GoodbyeEventHandler extends RTMEventHandler<GoodbyeEvent> {
         @Override
         public void handle(GoodbyeEvent event) {
-            reconnect();
+            logger.debug("Received goodbye");
+
+            try {
+                rtmClient.disconnect();
+            } catch (IOException | RuntimeException e) {
+                logger.warn("Failed to disconnect from Slack", e);
+            }
         }
     }
 
@@ -234,9 +235,10 @@ public class SlackRtmService implements Closeable {
 
             final SlackReactionRequest req = SlackReactionRequest.of(event);
             slackReactionService.process(req)
-                          .flatMap(res -> slackClient.sendMessage(req.channel(), res.text(), req.messageTs()))
-                          .subscribe(null,
-                                     t -> logger.error("Failed to handle event<{}>", event, t));
+                                .flatMap(res -> slackClient.sendMessage(req.channel(), res.text(),
+                                                                        req.messageTs()))
+                                .subscribe(null,
+                                           t -> logger.error("Failed to handle event<{}>", event, t));
         }
     }
 }

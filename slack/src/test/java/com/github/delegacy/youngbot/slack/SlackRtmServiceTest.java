@@ -1,12 +1,12 @@
 package com.github.delegacy.youngbot.slack;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -102,7 +102,6 @@ class SlackRtmServiceTest {
         final SlackRtmService.HelloEventHandler helloEventHandler = slackRtmService.new HelloEventHandler();
         helloEventHandler.handle(new HelloEvent());
 
-        assertThat(slackRtmService.isSessionClosed()).isFalse();
         verify(scheduledExecutorService).scheduleWithFixedDelay(
                 any(SlackRtmService.PingTask.class), anyLong(), anyLong(), any(TimeUnit.class));
         assertSame(future, slackRtmService.getPingTaskFuture());
@@ -116,7 +115,6 @@ class SlackRtmServiceTest {
 
         helloEventHandler.handle(new HelloEvent());
 
-        assertThat(slackRtmService.isSessionClosed()).isFalse();
         verify(scheduledExecutorService, never()).scheduleWithFixedDelay(
                 any(SlackRtmService.PingTask.class), anyLong(), anyLong(), any(TimeUnit.class));
         assertSame(future, slackRtmService.getPingTaskFuture());
@@ -125,7 +123,6 @@ class SlackRtmServiceTest {
     @Test
     void testPingTask_whenSessionIsOpen() throws Exception {
         final SlackRtmService.PingTask pingTask = slackRtmService.new PingTask();
-        slackRtmService.setSessionClosed(false);
 
         pingTask.run();
 
@@ -134,8 +131,9 @@ class SlackRtmServiceTest {
 
     @Test
     void testPingTask_whenSessionIsClosed() throws Exception {
+        doThrow(IllegalStateException.class).when(rtmClient).sendMessage(anyString());
+
         final SlackRtmService.PingTask pingTask = slackRtmService.new PingTask();
-        slackRtmService.setSessionClosed(true);
 
         pingTask.run();
 
@@ -149,7 +147,7 @@ class SlackRtmServiceTest {
 
         goodbyeEventHandler.handle(new GoodbyeEvent());
 
-        verify(rtmClient).reconnect();
+        verify(rtmClient).disconnect();
     }
 
     @Test
