@@ -1,6 +1,6 @@
 boms:
   - io.github.resilience4j:resilience4j-bom:1.6.1
-  - org.springframework.boot:spring-boot-dependencies:2.3.4.RELEASE
+  - org.springframework.boot:spring-boot-dependencies:2.3.5.RELEASE
 
 com.linecorp.bot:
   line-bot-api-client:
