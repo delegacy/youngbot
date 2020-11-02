@@ -4,8 +4,6 @@ import static java.util.Objects.requireNonNull;
 
 import javax.annotation.PostConstruct;
 
-import com.github.delegacy.youngbot.message.MessageService;
-import com.github.delegacy.youngbot.slack.reaction.SlackReactionService;
 import com.slack.api.bolt.App;
 import com.slack.api.bolt.request.Request;
 import com.slack.api.bolt.response.Response;
@@ -22,13 +20,10 @@ public class SlackAppService {
     /**
      * TBW.
      */
-    public SlackAppService(App app, MessageService messageService, SlackClient slackClient,
-                           SlackReactionService slackReactionService) {
+    public SlackAppService(App app, SlackService slackService) {
         blockingService =
                 new SlackAppBlockingService(requireNonNull(app, "app"),
-                                            requireNonNull(messageService, "messageService"),
-                                            requireNonNull(slackClient, "slackClient"),
-                                            requireNonNull(slackReactionService, "slackReactionService"));
+                                            requireNonNull(slackService, "slackService"));
     }
 
     /**

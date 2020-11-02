@@ -1,6 +1,5 @@
 package com.github.delegacy.youngbot.web;
 
-import static com.github.delegacy.youngbot.internal.testing.TestUtils.msgReq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -18,9 +17,9 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.BodyInserters;
 
+import com.github.delegacy.youngbot.event.EventResponse;
+import com.github.delegacy.youngbot.event.EventService;
 import com.github.delegacy.youngbot.internal.testing.TestConfiguration;
-import com.github.delegacy.youngbot.message.MessageResponse;
-import com.github.delegacy.youngbot.message.MessageService;
 
 import reactor.core.publisher.Flux;
 
@@ -31,21 +30,20 @@ class AbstractMessageControllerTest {
     @RestController
     static class MessageController extends AbstractMessageController {
         @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-        protected MessageController(MessageService messageService) {
-            super(messageService);
+        protected MessageController(EventService eventService) {
+            super(eventService);
         }
     }
 
     @MockBean
-    private MessageService messageService;
+    private EventService eventService;
 
     @Resource
     private WebTestClient webClient;
 
     @Test
     void testOnWebhook() {
-        when(messageService.process(any())).thenReturn(
-                Flux.just(MessageResponse.of(msgReq("text"), "PONG")));
+        when(eventService.process(any())).thenReturn(Flux.just(EventResponse.of("PONG")));
 
         webClient.post().uri("/api/message/v1/webhook")
                  .contentType(MediaType.APPLICATION_JSON)
@@ -58,8 +56,7 @@ class AbstractMessageControllerTest {
 
     @Test
     void testOnWebhook_multipleWebhookResponses() {
-        when(messageService.process(any())).thenReturn(
-                Flux.just(MessageResponse.of(msgReq("text"), "PONG")).repeat(2));
+        when(eventService.process(any())).thenReturn(Flux.just(EventResponse.of("PONG")).repeat(2));
 
         webClient.post().uri("/api/message/v1/webhook")
                  .contentType(MediaType.APPLICATION_JSON)
@@ -68,6 +65,19 @@ class AbstractMessageControllerTest {
                  .expectStatus().isOk()
                  .expectBody()
                  .json("[{\"text\":\"PONG\"},{\"text\":\"PONG\"},{\"text\":\"PONG\"}]");
+    }
+
+    @Test
+    void testOnWebhook_emptyResponse() {
+        when(eventService.process(any())).thenReturn(Flux.empty());
+
+        webClient.post().uri("/api/message/v1/webhook")
+                 .contentType(MediaType.APPLICATION_JSON)
+                 .body(BodyInserters.fromValue("{\"text\":\"ping\"}"))
+                 .exchange()
+                 .expectStatus().isOk()
+                 .expectBody()
+                 .json("[]");
     }
 
     @Test
@@ -81,7 +91,7 @@ class AbstractMessageControllerTest {
 
     @Test
     void testOnWebhook_internalServerErrorException() {
-        when(messageService.process(any())).thenThrow(RuntimeException.class);
+        when(eventService.process(any())).thenThrow(RuntimeException.class);
 
         webClient.post().uri("/api/message/v1/webhook")
                  .contentType(MediaType.APPLICATION_JSON)

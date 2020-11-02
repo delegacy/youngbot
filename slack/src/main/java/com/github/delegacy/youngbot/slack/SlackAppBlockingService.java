@@ -5,9 +5,6 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.delegacy.youngbot.message.MessageService;
-import com.github.delegacy.youngbot.slack.reaction.SlackReactionRequest;
-import com.github.delegacy.youngbot.slack.reaction.SlackReactionService;
 import com.slack.api.app_backend.events.payload.EventsApiPayload;
 import com.slack.api.bolt.App;
 import com.slack.api.bolt.context.builtin.EventContext;
@@ -29,21 +26,14 @@ class SlackAppBlockingService {
 
     private final App app;
 
-    private final MessageService messageService;
-
-    private final SlackClient slackClient;
-
-    private final SlackReactionService slackReactionService;
+    private final SlackService slackService;
 
     /**
      * TBW.
      */
-    SlackAppBlockingService(App app, MessageService messageService, SlackClient slackClient,
-                            SlackReactionService slackReactionService) {
+    SlackAppBlockingService(App app, SlackService slackService) {
         this.app = app;
-        this.messageService = messageService;
-        this.slackClient = slackClient;
-        this.slackReactionService = slackReactionService;
+        this.slackService = slackService;
     }
 
     void initialize() {
@@ -58,18 +48,14 @@ class SlackAppBlockingService {
 
     class MessageEventHandler implements BoltEventHandler<MessageEvent> {
         @Override
-        public Response apply(EventsApiPayload<MessageEvent> eventPayload, EventContext ctx)
+        public Response apply(EventsApiPayload<MessageEvent> payload, EventContext ctx)
                 throws IOException, SlackApiException {
-
-            final MessageEvent event = eventPayload.getEvent();
+            final MessageEvent event = payload.getEvent();
             logger.debug("Received text<{}> from channel<{}>", event.getText(), event.getChannel());
 
-            final SlackMessageRequest req = SlackMessageRequest.of(event);
-            messageService.process(req)
-                          .flatMap(res -> slackClient.sendMessage(req.channel(), res.text(), req.threadTs()))
-                          .subscribe(null,
-                                     t -> logger.error("Failed to handle event<{}>;ctx<{}>",
-                                                       eventPayload, ctx, t));
+            slackService.processEvent(SlackMessageEvent.of(event))
+                        .subscribe(null,
+                                   t -> logger.error("Failed to process event<{}>", event, t));
 
             return ctx.ack();
         }
@@ -77,19 +63,15 @@ class SlackAppBlockingService {
 
     class ReactionAddedEventHandler implements BoltEventHandler<ReactionAddedEvent> {
         @Override
-        public Response apply(EventsApiPayload<ReactionAddedEvent> eventPayLoad, EventContext ctx)
+        public Response apply(EventsApiPayload<ReactionAddedEvent> payload, EventContext ctx)
                 throws IOException, SlackApiException {
-
-            final ReactionAddedEvent event = eventPayLoad.getEvent();
+            final ReactionAddedEvent event = payload.getEvent();
             logger.debug("Received reaction<{}> from channel<{}>",
                          event.getReaction(), event.getItem().getChannel());
 
-            final SlackReactionRequest req = SlackReactionRequest.of(event);
-            slackReactionService.process(req)
-                                .flatMap(res -> slackClient.sendMessage(req.channel(), res.text(),
-                                                                        req.messageTs()))
-                                .subscribe(null,
-                                           t -> logger.error("Failed to handle event<{}>", event, t));
+            slackService.processEvent(SlackReactionEvent.of(event))
+                        .subscribe(null,
+                                   t -> logger.error("Failed to process event<{}>", event, t));
 
             return ctx.ack();
         }

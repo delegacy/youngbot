@@ -68,7 +68,6 @@ class AbstractLineControllerTest {
 
         final ArgumentCaptor<CallbackRequest> callbackCaptor =
                 ArgumentCaptor.forClass(CallbackRequest.class);
-
         verify(lineService).handleCallback(callbackCaptor.capture());
 
         @SuppressWarnings("unchecked")

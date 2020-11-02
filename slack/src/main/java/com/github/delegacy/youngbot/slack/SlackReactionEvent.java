@@ -1,4 +1,4 @@
-package com.github.delegacy.youngbot.slack.reaction;
+package com.github.delegacy.youngbot.slack;
 
 import static java.util.Objects.requireNonNull;
 
@@ -9,15 +9,15 @@ import com.slack.api.model.event.ReactionAddedEvent;
 /**
  * TBW.
  */
-public final class SlackReactionRequest {
+public final class SlackReactionEvent implements SlackReplyableEvent {
     /**
      * TBW.
      */
-    public static SlackReactionRequest of(ReactionAddedEvent event) {
+    public static SlackReactionEvent of(ReactionAddedEvent event) {
         requireNonNull(event, "event");
 
-        return new SlackReactionRequest(event.getItem().getChannel(), event.getReaction(),
-                                        event.getUser(), event.getItem().getTs());
+        return new SlackReactionEvent(event.getItem().getChannel(), event.getReaction(),
+                                      event.getUser(), event.getItem().getTs());
     }
 
     private final String channel;
@@ -26,19 +26,17 @@ public final class SlackReactionRequest {
 
     private final String user;
 
-    private final String messageTs;
+    private final String ts;
 
     @VisibleForTesting
-    SlackReactionRequest(String channel, String reaction, String user, String messageTs) {
+    SlackReactionEvent(String channel, String reaction, String user, String ts) {
         this.channel = channel;
         this.reaction = reaction;
         this.user = user;
-        this.messageTs = messageTs;
+        this.ts = ts;
     }
 
-    /**
-     * TBW.
-     */
+    @Override
     public String channel() {
         return channel;
     }
@@ -50,18 +48,14 @@ public final class SlackReactionRequest {
         return reaction;
     }
 
-    /**
-     * TBW.
-     */
+    @Override
     public String user() {
         return user;
     }
 
-    /**
-     * TBW.
-     */
-    public String messageTs() {
-        return messageTs;
+    @Override
+    public String ts() {
+        return ts;
     }
 
     @Override
@@ -70,7 +64,7 @@ public final class SlackReactionRequest {
                           .add("channel", channel)
                           .add("reaction", reaction)
                           .add("user", user)
-                          .add("messageTs", messageTs)
+                          .add("ts", ts)
                           .toString();
     }
 }

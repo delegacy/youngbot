@@ -1,6 +1,6 @@
 package com.github.delegacy.youngbot.web;
 
-import com.github.delegacy.youngbot.message.MessageResponse;
+import com.github.delegacy.youngbot.event.EventResponse;
 
 /**
  * TBW.
@@ -11,8 +11,8 @@ public class WebhookResponse {
     /**
      * TBW.
      */
-    public WebhookResponse(MessageResponse messageResponse) {
-        text = messageResponse.text();
+    public WebhookResponse(EventResponse eventResponse) {
+        text = eventResponse.text();
     }
 
     /**
