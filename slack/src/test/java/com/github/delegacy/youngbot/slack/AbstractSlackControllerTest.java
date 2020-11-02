@@ -2,7 +2,6 @@ package com.github.delegacy.youngbot.slack;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -63,7 +62,7 @@ class AbstractSlackControllerTest {
                  .expectStatus().isOk();
 
         final ArgumentCaptor<EventRequest> reqCaptor = ArgumentCaptor.forClass(EventRequest.class);
-        verify(slackAppService, times(1)).run(reqCaptor.capture());
+        verify(slackAppService).run(reqCaptor.capture());
 
         final EventRequest req = reqCaptor.getValue();
         assertThat(req.getRequestType()).isEqualTo(RequestType.Event);

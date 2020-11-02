@@ -47,7 +47,8 @@ public abstract class AbstractLineController {
     public void onWebhook(RequestEntity<String> request) {
         buildCallbackRequest(request)
                 .flatMap(lineService::handleCallback)
-                .subscribe(null, t -> logger.error("Failed to handle callback", t));
+                .subscribe(null,
+                           t -> logger.error("Failed to handle request<{}>", request, t));
     }
 
     private Mono<CallbackRequest> buildCallbackRequest(RequestEntity<String> request) {
@@ -59,7 +60,7 @@ public abstract class AbstractLineController {
             }
 
             final String signature = signatures.get(0);
-            final byte[] json = requireNonNull(request.getBody(), "payload").getBytes(StandardCharsets.UTF_8);
+            final byte[] json = requireNonNull(request.getBody(), "body").getBytes(StandardCharsets.UTF_8);
             try {
                 return webhookParser.handle(signature, json);
             } catch (IOException | WebhookParseException e) {

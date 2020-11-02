@@ -1,8 +1,6 @@
-package com.github.delegacy.youngbot.message.processor;
+package com.github.delegacy.youngbot.event.message;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.regex.Matcher;
+import java.util.Collections;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.params.ParameterizedTest;
@@ -10,21 +8,21 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import com.github.delegacy.youngbot.internal.testing.TestUtils;
-import com.github.delegacy.youngbot.message.MessageResponse;
+import com.github.delegacy.youngbot.event.EventResponse;
+import com.github.delegacy.youngbot.event.EventService;
 
 import reactor.test.StepVerifier;
 
-class EchoMessageHandlerTest {
-    private final EchoMessageProcessor processor = new EchoMessageProcessor();
+class EchoProcessorTest {
+    private final EchoProcessor processor = new EchoProcessor();
+
+    private final EventService eventService = new EventService(Collections.singleton(processor));
 
     @ParameterizedTest
     @MethodSource("provideStringsForTestMatched")
     void testMatched(String input, String expected) {
-        final Matcher matcher = processor.pattern().matcher(input);
-        assertThat(matcher.matches()).isEqualTo(true);
-        StepVerifier.create(processor.process(TestUtils.msgReq(input), matcher)
-                                     .map(MessageResponse::text))
+        StepVerifier.create(eventService.process(MessageEvent.of(input))
+                                        .map(EventResponse::text))
                     .expectNext(expected)
                     .expectComplete()
                     .verify();
@@ -45,7 +43,8 @@ class EchoMessageHandlerTest {
     @ParameterizedTest
     @ValueSource(strings = { "eko Hello", "/eko Hello" })
     void testNotMatched(String input) {
-        final Matcher matcher = processor.pattern().matcher(input);
-        assertThat(matcher.matches()).isEqualTo(false);
+        StepVerifier.create(eventService.process(MessageEvent.of(input)))
+                    .expectComplete()
+                    .verify();
     }
 }

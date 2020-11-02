@@ -10,8 +10,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.github.delegacy.youngbot.boot.YoungBotSettings.Line;
+import com.github.delegacy.youngbot.event.EventService;
+import com.github.delegacy.youngbot.line.LineClient;
 import com.github.delegacy.youngbot.line.LineService;
-import com.github.delegacy.youngbot.message.MessageService;
 
 import com.linecorp.bot.client.LineMessagingClient;
 import com.linecorp.bot.parser.LineSignatureValidator;
@@ -19,7 +20,6 @@ import com.linecorp.bot.parser.LineSignatureValidator;
 /**
  * TBW.
  */
-@SuppressWarnings({ "SpringFacetCodeInspection", "SpringJavaInjectionPointsAutowiringInspection" })
 @Configuration
 @ConditionalOnClass(LineService.class)
 public class LineConfiguration {
@@ -40,8 +40,7 @@ public class LineConfiguration {
     @ConditionalOnMissingBean
     public LineMessagingClient lineMessagingClient(YoungBotSettings youngBotSettings) {
         final Line line = requireNonNull(youngBotSettings.getLine(), "line");
-        return LineMessagingClient.builder(line.getChannelToken())
-                                  .build();
+        return LineMessagingClient.builder(line.getChannelToken()).build();
     }
 
     /**
@@ -49,7 +48,16 @@ public class LineConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean
-    public LineService lineService(LineMessagingClient lineMessagingClient, MessageService messageService) {
-        return new LineService(lineMessagingClient, messageService);
+    public LineClient lineClient(LineMessagingClient lineMessagingClient) {
+        return new LineClient(lineMessagingClient);
+    }
+
+    /**
+     * TBW.
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public LineService lineService(EventService eventService, LineClient lineClient) {
+        return new LineService(eventService, lineClient);
     }
 }

@@ -11,11 +11,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.ServerWebInputException;
 
-import com.github.delegacy.youngbot.message.MessageRequest;
-import com.github.delegacy.youngbot.message.MessageService;
+import com.github.delegacy.youngbot.event.EventService;
+import com.github.delegacy.youngbot.event.message.MessageEvent;
 
 import reactor.core.publisher.Mono;
 
@@ -25,23 +24,22 @@ import reactor.core.publisher.Mono;
 public abstract class AbstractMessageController {
     private static final Logger logger = LoggerFactory.getLogger(AbstractMessageController.class);
 
-    private final MessageService messageService;
+    private final EventService eventService;
 
     /**
      * TBW.
      */
-    protected AbstractMessageController(MessageService messageService) {
-        this.messageService = requireNonNull(messageService, "messageService");
+    protected AbstractMessageController(EventService eventService) {
+        this.eventService = requireNonNull(eventService, "eventService");
     }
 
     /**
      * TBW.
      */
     @PostMapping("${youngbot.webhook-path:/api/message/v1/webhook}")
-    public Mono<List<WebhookResponse>> onWebhook(@RequestBody Mono<WebhookRequest> request,
-                                                 ServerWebExchange exchange) {
-        return request.map(req -> MessageRequest.of(exchange.getRequest().getId(), req.getText()))
-                      .flatMapMany(messageService::process)
+    public Mono<List<WebhookResponse>> onWebhook(@RequestBody Mono<WebhookRequest> request) {
+        return request.map(req -> MessageEvent.of(req.getText()))
+                      .flatMapMany(eventService::process)
                       .map(WebhookResponse::new)
                       .collectList();
     }

@@ -12,10 +12,10 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
-import com.github.delegacy.youngbot.message.MessageService;
-import com.github.delegacy.youngbot.message.processor.EchoMessageProcessor;
-import com.github.delegacy.youngbot.message.processor.MessageProcessor;
-import com.github.delegacy.youngbot.message.processor.PingMessageProcessor;
+import com.github.delegacy.youngbot.event.EventProcessor;
+import com.github.delegacy.youngbot.event.EventService;
+import com.github.delegacy.youngbot.event.message.EchoProcessor;
+import com.github.delegacy.youngbot.event.message.PingProcessor;
 
 /**
  * TBW.
@@ -32,10 +32,10 @@ public class YoungBotAutoConfiguration {
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Bean
     @ConditionalOnMissingBean
-    public MessageService messageService(Set<MessageProcessor> processors) {
-        final Set<MessageProcessor> moreProcessors = new HashSet<>(processors);
-        moreProcessors.add(new PingMessageProcessor());
-        moreProcessors.add(new EchoMessageProcessor());
-        return new MessageService(moreProcessors);
+    public EventService eventService(Set<EventProcessor> processors) {
+        final Set<EventProcessor> moreProcessors = new HashSet<>(processors);
+        moreProcessors.add(new PingProcessor());
+        moreProcessors.add(new EchoProcessor());
+        return new EventService(moreProcessors);
     }
 }
