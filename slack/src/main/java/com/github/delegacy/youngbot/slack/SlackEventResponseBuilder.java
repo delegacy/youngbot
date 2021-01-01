@@ -6,7 +6,7 @@ package com.github.delegacy.youngbot.slack;
 public final class SlackEventResponseBuilder {
     private final String text;
 
-    private boolean secret;
+    private boolean ephemeral;
 
     /**
      * TBW.
@@ -18,8 +18,8 @@ public final class SlackEventResponseBuilder {
     /**
      * TBW.
      */
-    public SlackEventResponseBuilder secret(boolean secret) {
-        this.secret = secret;
+    public SlackEventResponseBuilder ephemeral(boolean ephemeral) {
+        this.ephemeral = ephemeral;
         return this;
     }
 
@@ -27,6 +27,6 @@ public final class SlackEventResponseBuilder {
      * TBW.
      */
     public SlackEventResponse build() {
-        return new SlackEventResponse(text, secret);
+        return new SlackEventResponse(text, ephemeral);
     }
 }

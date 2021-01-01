@@ -113,6 +113,7 @@ class SlackRtmServiceTest {
         final MessageEvent event = new MessageEvent();
         event.setChannel("channel");
         event.setText("ping");
+        event.setUser("user");
         event.setThreadTs("threadTs");
 
         when(slackService.processEvent(any())).thenReturn(Mono.empty());

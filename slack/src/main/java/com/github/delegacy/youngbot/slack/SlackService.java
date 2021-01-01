@@ -1,5 +1,7 @@
 package com.github.delegacy.youngbot.slack;
 
+import static java.util.Objects.requireNonNull;
+
 import com.github.delegacy.youngbot.event.EventService;
 import com.slack.api.model.Message;
 
@@ -17,26 +19,28 @@ public class SlackService {
      * TBW.
      */
     public SlackService(EventService eventService, SlackClient slackClient) {
-        this.eventService = eventService;
-        this.slackClient = slackClient;
+        this.eventService = requireNonNull(eventService, "eventService");
+        this.slackClient = requireNonNull(slackClient, "slackClient");
     }
 
     /**
      * TBW.
      */
     public Mono<Void> processEvent(SlackEvent event) {
+        final var flux = eventService.process(event);
+
         if (!(event instanceof SlackReplyableEvent)) {
-            return eventService.process(event).then();
+            return flux.then();
         }
 
-        return eventService.process(event)
-                           .map(SlackEventResponse::of)
-                           .flatMap(res -> reply((SlackReplyableEvent) event, res))
-                           .then();
+        final var cast = (SlackReplyableEvent) event;
+        return flux.map(SlackEventResponse::of)
+                   .flatMap(res -> reply(cast, res))
+                   .then();
     }
 
     private Mono<String> reply(SlackReplyableEvent event, SlackEventResponse res) {
-        if (res.secret()) {
+        if (res.ephemeral()) {
             return slackClient.postEphemeral(event.channel(), res.text(), event.user(), event.ts());
         }
 

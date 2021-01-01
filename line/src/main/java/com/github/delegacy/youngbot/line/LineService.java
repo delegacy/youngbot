@@ -5,6 +5,7 @@ import static java.util.Objects.requireNonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.delegacy.youngbot.event.EventResponse;
 import com.github.delegacy.youngbot.event.EventService;
 
 import com.linecorp.bot.model.event.CallbackRequest;
@@ -39,6 +40,11 @@ public class LineService {
     public Mono<Void> handleCallback(CallbackRequest callback) {
         return toEventFlux(callback)
                 .flatMap(this::processEvent)
+                .onErrorResume(t -> {
+                    logger.warn("Failed to process an event of callback<{}> and will resume the next",
+                                callback, t);
+                    return Mono.empty();
+                })
                 .then();
     }
 
@@ -61,24 +67,22 @@ public class LineService {
                        final String channel = messageEvent.getSource().getSenderId();
                        logger.debug("Received text<{}> from channel<{}>", text, channel);
 
-                       return Mono.just(new LineMessageEvent(channel, text, messageEvent.getReplyToken()));
+                       return Mono.just(LineMessageEvent.of(channel, text, messageEvent.getReplyToken()));
                    });
     }
 
     private Mono<Void> processEvent(LineEvent event) {
+        final var flux = eventService.process(event);
+
         if (!(event instanceof LineReplyableEvent)) {
-            return eventService.process(event).then();
+            return flux.then();
         }
 
-        return eventService.process(event)
-                           .take(5)
-                           .collectList()
-                           .flatMap(list -> lineClient.replyMessage(
-                                   ((LineReplyableEvent) event).replyToken(), list))
-                           .onErrorResume(t -> {
-                               logger.error("Failed to process event<{}>", event, t);
-                               return Mono.empty();
-                           })
-                           .then();
+        final var cast = (LineReplyableEvent) event;
+        return flux.take(5)
+                   .map(EventResponse::text)
+                   .collectList()
+                   .flatMap(list -> lineClient.replyMessage(cast.replyToken(), list))
+                   .then();
     }
 }

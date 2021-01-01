@@ -19,6 +19,7 @@ import com.github.delegacy.youngbot.internal.testing.TextFileParameterResolver;
 import com.slack.api.app_backend.events.payload.EventsApiPayload;
 import com.slack.api.bolt.App;
 import com.slack.api.bolt.context.builtin.EventContext;
+import com.slack.api.bolt.request.Request;
 import com.slack.api.bolt.request.RequestHeaders;
 import com.slack.api.bolt.request.builtin.EventRequest;
 import com.slack.api.bolt.response.Response;
@@ -45,12 +46,20 @@ class SlackAppBlockingServiceTest {
     }
 
     @Test
-    void testMessageEventHandlerConfiguration() throws Exception {
-        slackAppBlockingService.initialize();
+    void testInit() throws Exception {
+        slackAppBlockingService.init();
 
         verify(app).event(eq(MessageEvent.class), any(SlackAppBlockingService.MessageEventHandler.class));
         verify(app).event(eq(ReactionAddedEvent.class),
                           any(SlackAppBlockingService.ReactionAddedEventHandler.class));
+    }
+
+    @Test
+    void testRun(@Mock Request<?> request, @Mock Response response) throws Exception {
+        when(app.run(eq(request))).thenReturn(response);
+
+        final var actual = slackAppBlockingService.run(request);
+        assertThat(actual).isSameAs(response);
     }
 
     @Test

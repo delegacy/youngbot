@@ -40,7 +40,7 @@ public class SlackClient {
     /**
      * TBW.
      */
-    public AsyncMethodsClient client() {
+    public AsyncMethodsClient rawClient() {
         return client;
     }
 
@@ -63,17 +63,19 @@ public class SlackClient {
                    .flatMap(req -> Mono.fromFuture(client.chatPostMessage(req)))
                    .flatMap(res -> {
                        if (!res.isOk()) {
-                           logger.error("Failed to post message<{}> in channel<{}>;error<{}>",
+                           logger.error("Failed to send message<{}> to channel<{}>;error<{}>",
                                         message, channel, res.getError());
-                           return Mono.empty();
+                           return Mono.error(
+                                   new SlackException("Failed to send message;error:" + res.getError()));
                        }
 
-                       if (res.getWarning() != null) {
-                           logger.warn("Posted message<{}> in channel<{}>;warn<{}>",
-                                       message, channel, res.getWarning());
+                       if (res.getWarning() == null) {
+                           logger.debug("Sent message<{}> to channel<{}>", message, channel);
                        } else {
-                           logger.debug("Posted message<{}> in channel<{}>", message, channel);
+                           logger.warn("Sent message<{}> to channel<{}>;warn<{}>",
+                                       message, channel, res.getWarning());
                        }
+
                        return Mono.just(res.getMessage());
                    });
     }
@@ -100,18 +102,21 @@ public class SlackClient {
                    .flatMap(res -> {
                        if (!res.isOk()) {
                            logger.error(
-                                   "Failed to post ephemeral message<{}> to user<{}> in channel<{}>;error<{}>",
+                                   "Failed to send ephemeral message<{}> to user<{}> in channel<{}>;error<{}>",
                                    message, user, channel, res.getError());
-                           return Mono.empty();
+                           return Mono.error(
+                                   new SlackException("Failed to send ephemeral message;error:" +
+                                                      res.getError()));
                        }
 
-                       if (res.getWarning() != null) {
-                           logger.warn("Posted ephemeral message<{}> to user<{}> in channel<{}>;warn<{}>",
-                                       message, user, channel, res.getWarning());
-                       } else {
-                           logger.debug("Posted ephemeral message<{}> to user<{}> in channel<{}>",
+                       if (res.getWarning() == null) {
+                           logger.debug("Sent ephemeral message<{}> to user<{}> in channel<{}>",
                                         message, user, channel);
+                       } else {
+                           logger.warn("Sent ephemeral message<{}> to user<{}> in channel<{}>;warn<{}>",
+                                       message, user, channel, res.getWarning());
                        }
+
                        return Mono.just(res.getMessageTs());
                    });
     }
@@ -138,18 +143,20 @@ public class SlackClient {
                    .flatMap(req -> Mono.fromFuture(client.chatScheduleMessage(req)))
                    .flatMap(res -> {
                        if (!res.isOk()) {
-                           logger.error("Failed to schedule message<{}> at <{}> in channel<{}>;error<{}>",
+                           logger.error("Failed to schedule message<{}> to channel<{}> at <{}>;error<{}>",
                                         message, channel, postAt, res.getError());
-                           return Mono.empty();
+                           return Mono.error(
+                                   new SlackException("Failed to schedule message;error:" + res.getError()));
                        }
 
-                       if (res.getWarning() != null) {
-                           logger.warn("Posted schedule message<{}> at <{}> in channel<{}>;warn<{}>",
-                                       message, channel, postAt, res.getWarning());
-                       } else {
-                           logger.debug("Posted schedule message<{}> at <{}> in channel<{}>",
+                       if (res.getWarning() == null) {
+                           logger.debug("Scheduled message<{}> to channel<{}> at <{}>",
                                         message, channel, postAt);
+                       } else {
+                           logger.warn("Scheduled message<{}> to channel<{}> at <{}>;warn<{}>",
+                                       message, channel, postAt, res.getWarning());
                        }
+
                        return Mono.just(res.getScheduledMessageId());
                    });
     }
@@ -164,13 +171,18 @@ public class SlackClient {
                                  .scheduledMessageId(requireNonNull(scheduledMessageId, "scheduledMessageId"))
                                  .build())
                    .flatMap(req -> Mono.fromFuture(client.chatDeleteScheduledMessage(req)))
-                   .doOnNext(res -> {
+                   .map(res -> {
                        if (!res.isOk()) {
-                           logger.error("Failed to delete scheduledMessage<{}> in channel<{}>;error<{}>",
-                                        scheduledMessageId, channel, res.getError());
+                           logger.error(
+                                   "Failed to delete pending scheduledMessage<{}> in channel<{}>;error<{}>",
+                                   scheduledMessageId, channel, res.getError());
+                           throw new SlackException("Failed to delete pending scheduled message;error:" +
+                                                    res.getError());
                        }
 
-                       logger.debug("Deleted scheduledMessage<{}> in channel<{}>", scheduledMessageId, channel);
+                       logger.debug("Deleted pending scheduledMessage<{}> in channel<{}>",
+                                    scheduledMessageId, channel);
+                       return res;
                    })
                    .then();
     }
@@ -186,9 +198,11 @@ public class SlackClient {
                    .flatMap(req -> Mono.fromFuture(client.chatGetPermalink(req)))
                    .flatMap(res -> {
                        if (!res.isOk()) {
-                           logger.warn("Failed to getPermalink for messageTs<{}> in channel<{}>;error<{}>",
-                                       messageTs, channel, res.getError());
-                           return Mono.empty();
+                           logger.error(
+                                   "Failed to get the permalink URL for messageTs<{}> in channel<{}>;error<{}>",
+                                   messageTs, channel, res.getError());
+                           return Mono.error(
+                                   new SlackException("Failed to get the permalink;error:" + res.getError()));
                        }
 
                        return Mono.just(res.getPermalink());
@@ -198,18 +212,20 @@ public class SlackClient {
     /**
      * TBW.
      */
-    public Mono<List<Message>> getThreadedMessages(String channel, String messageTs) {
+    public Mono<List<Message>> getThreadOfMessages(String channel, String ts) {
         return Mono.just(ConversationsRepliesRequest.builder()
                                                     .channel(requireNonNull(channel, "channel"))
-                                                    .ts(requireNonNull(messageTs, "messageTs"))
+                                                    .ts(requireNonNull(ts, "ts"))
                                                     .build())
                    .flatMap(req -> Mono.fromFuture(client.conversationsReplies(req)))
                    .flatMap(res -> {
                        if (!res.isOk()) {
-                           logger.warn(
-                                   "Failed to getThreadedMessages for messageTs<{}> in channel<{}>;error<{}>",
-                                   messageTs, channel, res.getError());
-                           return Mono.empty();
+                           logger.error(
+                                   "Failed to get a thread of messages for ts<{}> in channel<{}>;error<{}>",
+                                   ts, channel, res.getError());
+                           return Mono.error(
+                                   new SlackException(
+                                           "Failed to get a thread of messages;error:" + res.getError()));
                        }
 
                        return Mono.just(res.getMessages());

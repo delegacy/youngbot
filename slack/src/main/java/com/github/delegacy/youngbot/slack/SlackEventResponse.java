@@ -29,11 +29,11 @@ public final class SlackEventResponse implements EventResponse {
 
     private final String text;
 
-    private final boolean secret;
+    private final boolean ephemeral;
 
-    SlackEventResponse(String text, boolean secret) {
+    SlackEventResponse(String text, boolean ephemeral) {
         this.text = text;
-        this.secret = secret;
+        this.ephemeral = ephemeral;
     }
 
     @Override
@@ -44,15 +44,15 @@ public final class SlackEventResponse implements EventResponse {
     /**
      * TBW.
      */
-    public boolean secret() {
-        return secret;
+    public boolean ephemeral() {
+        return ephemeral;
     }
 
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
                           .add("text", text)
-                          .add("secret", secret)
+                          .add("ephemeral", ephemeral)
                           .toString();
     }
 }

@@ -16,8 +16,18 @@ public final class SlackReactionEvent implements SlackReplyableEvent {
     public static SlackReactionEvent of(ReactionAddedEvent event) {
         requireNonNull(event, "event");
 
-        return new SlackReactionEvent(event.getItem().getChannel(), event.getReaction(),
-                                      event.getUser(), event.getItem().getTs());
+        return of(event.getItem().getChannel(), event.getReaction(), event.getUser(),
+                  event.getItem().getTs());
+    }
+
+    /**
+     * TBW.
+     */
+    public static SlackReactionEvent of(String channel, String reaction, String user, String ts) {
+        return new SlackReactionEvent(requireNonNull(channel, "channel"),
+                                      requireNonNull(reaction, "reaction"),
+                                      requireNonNull(user, "user"),
+                                      requireNonNull(ts, "ts"));
     }
 
     private final String channel;
