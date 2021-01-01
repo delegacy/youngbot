@@ -7,7 +7,6 @@ import static org.mockito.Mockito.when;
 
 import javax.annotation.Resource;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -52,14 +51,11 @@ class AbstractLineControllerTest {
     @MockBean
     private LineService lineService;
 
-    @BeforeEach
-    void beforeEach() {
+    @Test
+    void testOnWebhook(@TextFile("messageEvent.json") String json) {
         when(lineSignatureValidator.validateSignature(any(), any())).thenReturn(true);
         when(lineService.handleCallback(any())).thenReturn(Mono.empty());
-    }
 
-    @Test
-    void testMessageEvent(@TextFile("messageEvent.json") String json) {
         webClient.post().uri("/api/line/v1/webhook")
                  .header("X-Line-Signature", "signature")
                  .body(BodyInserters.fromValue(json))
@@ -75,5 +71,34 @@ class AbstractLineControllerTest {
                 (MessageEvent<TextMessageContent>) callbackCaptor.getValue().getEvents().get(0);
         assertThat(event.getReplyToken()).isEqualTo("replyToken1");
         assertThat(event.getMessage().getText()).isEqualTo("ping");
+    }
+
+    @Test
+    void testOnWebhook_missingSignature(@TextFile("messageEvent.json") String json) {
+        webClient.post().uri("/api/line/v1/webhook")
+                 .body(BodyInserters.fromValue(json))
+                 .exchange()
+                 .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void testOnWebhook_badSignature(@TextFile("messageEvent.json") String json) {
+        when(lineSignatureValidator.validateSignature(any(), any())).thenReturn(false);
+
+        webClient.post().uri("/api/line/v1/webhook")
+                 .header("X-Line-Signature", "badSignature")
+                 .body(BodyInserters.fromValue(json))
+                 .exchange()
+                 .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void testOnWebhook_missingBody() {
+        when(lineSignatureValidator.validateSignature(any(), any())).thenReturn(true);
+
+        webClient.post().uri("/api/line/v1/webhook")
+                 .header("X-Line-Signature", "signature")
+                 .exchange()
+                 .expectStatus().isBadRequest();
     }
 }

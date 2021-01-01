@@ -69,8 +69,7 @@ class LineServiceTest {
 
     @Test
     void testHandleCallback() throws Exception {
-        final LineMessageEvent event =
-                new LineMessageEvent("userId", "ping", "replyToken");
+        final LineMessageEvent event = LineMessageEvent.of("userId", "ping", "replyToken");
         when(eventService.process(any())).thenReturn(Flux.just(EventResponse.of("PONG")));
 
         StepVerifier.create(lineService.handleCallback(toCallbackRequest(event)))
@@ -78,17 +77,16 @@ class LineServiceTest {
                     .verify();
 
         //noinspection unchecked
-        final ArgumentCaptor<List<EventResponse>> responses = ArgumentCaptor.forClass(List.class);
+        final ArgumentCaptor<List<String>> responses = ArgumentCaptor.forClass(List.class);
         verify(lineClient).replyMessage(eq("replyToken"), responses.capture());
 
         assertThat(responses.getValue().size()).isEqualTo(1);
-        assertThat(responses.getValue().get(0).text()).isEqualTo("PONG");
+        assertThat(responses.getValue().get(0)).isEqualTo("PONG");
     }
 
     @Test
     void testHandleCallback_shouldFollowLimitOnMessagesPerReply() throws Exception {
-        final LineMessageEvent event =
-                new LineMessageEvent("userId", "ping", "replyToken");
+        final LineMessageEvent event = LineMessageEvent.of("userId", "ping", "replyToken");
         when(eventService.process(any())).thenReturn(Flux.just(EventResponse.of("PONG")).repeat(5));
 
         StepVerifier.create(lineService.handleCallback(toCallbackRequest(event)))
@@ -96,10 +94,10 @@ class LineServiceTest {
                     .verify();
 
         //noinspection unchecked
-        final ArgumentCaptor<List<EventResponse>> responses = ArgumentCaptor.forClass(List.class);
+        final ArgumentCaptor<List<String>> responses = ArgumentCaptor.forClass(List.class);
         verify(lineClient).replyMessage(eq("replyToken"), responses.capture());
 
         assertThat(responses.getValue().size()).isEqualTo(5);
-        assertThat(responses.getValue().get(0).text()).isEqualTo("PONG");
+        assertThat(responses.getValue().get(0)).isEqualTo("PONG");
     }
 }

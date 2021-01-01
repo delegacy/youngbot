@@ -8,21 +8,27 @@ import com.google.common.base.MoreObjects;
 /**
  * TBW.
  */
-public class LineMessageEvent implements MessageEvent,
-                                         LineReplyableEvent {
+public final class LineMessageEvent implements MessageEvent,
+                                               LineReplyableEvent {
+    /**
+     * TBW.
+     */
+    public static LineMessageEvent of(String channel, String text, String replyToken) {
+        return new LineMessageEvent(requireNonNull(channel, "channel"),
+                                    requireNonNull(text, "text"),
+                                    requireNonNull(replyToken, "replyToken"));
+    }
+
     private final String channel;
 
     private final String text;
 
     private final String replyToken;
 
-    /**
-     * TBW.
-     */
-    public LineMessageEvent(String channel, String text, String replyToken) {
-        this.channel = requireNonNull(channel, "channel");
-        this.text = requireNonNull(text, "text");
-        this.replyToken = requireNonNull(replyToken, "replyToken");
+    private LineMessageEvent(String channel, String text, String replyToken) {
+        this.channel = channel;
+        this.text = text;
+        this.replyToken = replyToken;
     }
 
     @Override

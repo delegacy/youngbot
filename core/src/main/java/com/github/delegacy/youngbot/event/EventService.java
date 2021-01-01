@@ -24,8 +24,7 @@ public class EventService {
      */
     public Flux<EventResponse> process(Event event) {
         return Flux.fromIterable(processors)
-                   .map(p -> new EventProcessorContext(p, event))
-                   .filterWhen(ctx -> ctx.processor().shouldProcess(ctx, event))
-                   .concatMap(ctx -> ctx.processor().process(ctx, event));
+                   .concatMap(p -> p.process(event))
+                   .subscriberContext(ctx -> ctx.put(EventContext.class, new DefaultEventContext(event)));
     }
 }

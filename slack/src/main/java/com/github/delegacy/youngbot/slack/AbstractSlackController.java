@@ -23,6 +23,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.server.ServerWebExchange;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.slack.api.bolt.App;
 import com.slack.api.bolt.request.Request;
 import com.slack.api.bolt.request.RequestHeaders;
@@ -46,8 +47,9 @@ public abstract class AbstractSlackController {
         return new HttpHeaders(CollectionUtils.toMultiValueMap(headerMap));
     }
 
+    @VisibleForTesting
     @Nullable
-    private static String toRemoteAddress(ServerHttpRequest serverHttpRequest) {
+    static String toRemoteAddress(ServerHttpRequest serverHttpRequest) {
         final InetSocketAddress inetSocketAddress = serverHttpRequest.getRemoteAddress();
         if (inetSocketAddress == null) {
             return null;

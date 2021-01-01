@@ -17,16 +17,25 @@ public final class SlackMessageEvent implements MessageEvent,
     public static SlackMessageEvent of(com.slack.api.model.event.MessageEvent messageEvent) {
         requireNonNull(messageEvent, "messageEvent");
 
-        return new SlackMessageEvent(
-                messageEvent.getChannel(), messageEvent.getText(), messageEvent.getUser(),
-                firstNonNull(messageEvent.getThreadTs(), messageEvent.getTs()));
+        return of(messageEvent.getChannel(), messageEvent.getText(), messageEvent.getUser(),
+                  firstNonNull(messageEvent.getThreadTs(), messageEvent.getTs()));
+    }
+
+    /**
+     * TBW.
+     */
+    public static SlackMessageEvent of(String channel, String text, String user, String threadTs) {
+        return new SlackMessageEvent(requireNonNull(channel, "channel"),
+                                     requireNonNull(text, "text"),
+                                     requireNonNull(user, "user"),
+                                     requireNonNull(threadTs, "threadTs"));
     }
 
     private final String channel;
 
-    private final String user;
-
     private final String text;
+
+    private final String user;
 
     private final String threadTs;
 

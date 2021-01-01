@@ -16,6 +16,7 @@ import javax.websocket.CloseReason.CloseCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.delegacy.youngbot.Consumers;
 import com.google.common.annotations.VisibleForTesting;
 import com.slack.api.model.event.Event;
 import com.slack.api.model.event.GoodbyeEvent;
@@ -189,7 +190,7 @@ public class SlackRtmService implements Closeable {
             logger.debug("Received text<{}> from channel<{}>", event.getText(), event.getChannel());
 
             slackService.processEvent(SlackMessageEvent.of(event))
-                        .subscribe(null,
+                        .subscribe(Consumers.noop(),
                                    t -> logger.error("Failed to handle event<{}>", event, t));
         }
     }
@@ -201,7 +202,7 @@ public class SlackRtmService implements Closeable {
                          event.getReaction(), event.getItem().getChannel());
 
             slackService.processEvent(SlackReactionEvent.of(event))
-                        .subscribe(null,
+                        .subscribe(Consumers.noop(),
                                    t -> logger.error("Failed to handle event<{}>", event, t));
         }
     }

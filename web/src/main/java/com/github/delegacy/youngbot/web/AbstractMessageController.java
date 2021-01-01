@@ -49,16 +49,5 @@ public abstract class AbstractMessageController {
      */
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(ServerWebInputException.class)
-    public void onBadRequestException(Throwable t) {
-        logger.debug("Failed to handle a request", t);
-    }
-
-    /**
-     * TBW.
-     */
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    @ExceptionHandler(Exception.class)
-    public void onInternalServerErrorException(Throwable t) {
-        logger.error("Failed to handle a request", t);
-    }
+    public void onBadRequestException() {}
 }

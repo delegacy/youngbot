@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.delegacy.youngbot.Consumers;
 import com.slack.api.app_backend.events.payload.EventsApiPayload;
 import com.slack.api.bolt.App;
 import com.slack.api.bolt.context.builtin.EventContext;
@@ -36,13 +37,12 @@ class SlackAppBlockingService {
         this.slackService = slackService;
     }
 
-    void initialize() {
+    void init() {
         app.event(MessageEvent.class, new MessageEventHandler());
         app.event(ReactionAddedEvent.class, new ReactionAddedEventHandler());
     }
 
-    @SuppressWarnings("rawtypes")
-    Response run(Request request) throws Exception {
+    Response run(Request<?> request) throws Exception {
         return app.run(request);
     }
 
@@ -54,7 +54,7 @@ class SlackAppBlockingService {
             logger.debug("Received text<{}> from channel<{}>", event.getText(), event.getChannel());
 
             slackService.processEvent(SlackMessageEvent.of(event))
-                        .subscribe(null,
+                        .subscribe(Consumers.noop(),
                                    t -> logger.error("Failed to process event<{}>", event, t));
 
             return ctx.ack();
@@ -70,7 +70,7 @@ class SlackAppBlockingService {
                          event.getReaction(), event.getItem().getChannel());
 
             slackService.processEvent(SlackReactionEvent.of(event))
-                        .subscribe(null,
+                        .subscribe(Consumers.noop(),
                                    t -> logger.error("Failed to process event<{}>", event, t));
 
             return ctx.ack();

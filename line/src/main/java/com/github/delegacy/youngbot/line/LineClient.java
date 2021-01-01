@@ -8,8 +8,6 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.delegacy.youngbot.event.EventResponse;
-
 import com.linecorp.bot.client.LineMessagingClient;
 import com.linecorp.bot.model.ReplyMessage;
 import com.linecorp.bot.model.message.Message;
@@ -35,21 +33,21 @@ public class LineClient {
     /**
      * TBW.
      */
-    public LineMessagingClient client() {
+    public LineMessagingClient rawClient() {
         return client;
     }
 
     /**
      * TBW.
      */
-    public Mono<Void> replyMessage(String replyToken, List<EventResponse> responses) {
-        return Mono.just(responses.stream()
-                                  .map(r -> (Message) new TextMessage(r.text()))
-                                  .collect(Collectors.toUnmodifiableList()))
+    public Mono<Void> replyMessage(String replyToken, List<String> messages) {
+        return Mono.just(messages.stream()
+                                 .map(msg -> (Message) new TextMessage(msg))
+                                 .collect(Collectors.toUnmodifiableList()))
                    .map(list -> new ReplyMessage(replyToken, list))
                    .flatMap(r -> Mono.fromFuture(client.replyMessage(r)))
                    .doOnNext(res -> logger.debug("Replied with replyToken<{}>;res<{}>", replyToken, res))
-                   .doOnError(t -> logger.warn("Failed to reply with replyToken<{}>", replyToken, t))
+                   .doOnError(t -> logger.error("Failed to reply with replyToken<{}>", replyToken, t))
                    .then();
     }
 }

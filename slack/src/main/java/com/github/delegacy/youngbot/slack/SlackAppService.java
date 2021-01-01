@@ -30,15 +30,14 @@ public class SlackAppService {
      * TBW.
      */
     @PostConstruct
-    public void initialize() {
-        blockingService.initialize();
+    public void init() {
+        blockingService.init();
     }
 
     /**
      * TBW.
      */
-    @SuppressWarnings("rawtypes")
-    public Mono<Response> run(Request request) {
+    public Mono<Response> run(Request<?> request) {
         return Mono.fromCallable(() -> blockingService.run(request))
                    .subscribeOn(Schedulers.boundedElastic());
     }

@@ -8,7 +8,6 @@ dependencies {
     ['resilience4j-reactor',
      'resilience4j-ratelimiter'].each {
         implementation "io.github.resilience4j:$it"
-
     }
 
     testRuntimeOnly 'org.springframework.boot:spring-boot-starter-reactor-netty'
