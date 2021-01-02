@@ -10,5 +10,6 @@ dependencies {
         implementation "io.github.resilience4j:$it"
     }
 
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.springframework.boot:spring-boot-starter-reactor-netty'
 }

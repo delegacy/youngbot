@@ -9,6 +9,10 @@ buildscript {
     }
 }
 
+plugins {
+    id "net.rdrei.android.buildtimetracker" version "0.11.0"
+}
+
 allprojects {
     repositories {
         mavenCentral()
@@ -17,7 +21,15 @@ allprojects {
 
 apply from: "${rootDir}/gradle/scripts/build-flags.gradle"
 
-// Configure all Java projects.
+buildtimetracker {
+    reporters {
+        summary {
+            ordered false
+            barstyle "unicode"
+        }
+    }
+}
+
 configure(projectsWithFlags('java')) {
     // Common dependencies
     dependencies {
@@ -25,16 +37,15 @@ configure(projectsWithFlags('java')) {
             api project(':core')
         }
 
-        // Guava
         implementation 'com.google.guava:guava'
 
-        // Logging
         implementation 'org.slf4j:slf4j-api'
 
-        // JSR305
         implementation 'com.google.code.findbugs:jsr305'
 
-        testImplementation project(':testing-internal')
+        if (project != project(':testing-internal')) {
+            testImplementation project(':testing-internal')
+        }
 
         testImplementation 'org.junit.jupiter:junit-jupiter-api'
         testImplementation 'org.junit.jupiter:junit-jupiter-params'
@@ -44,31 +55,27 @@ configure(projectsWithFlags('java')) {
         testRuntimeOnly 'org.junit.platform:junit-platform-engine'
         testRuntimeOnly 'io.projectreactor.tools:blockhound-junit-platform'
 
-        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testImplementation 'org.assertj:assertj-core'
         testImplementation 'io.projectreactor:reactor-test'
         testImplementation 'org.mockito:mockito-junit-jupiter'
         testImplementation 'org.awaitility:awaitility'
     }
 
-    test {
-        testLogging {
-            // Set options for log level LIFECYCLE
-            events 'failed'
-            exceptionFormat 'short'
+    tasks.withType(JavaCompile) {
+        options.compilerArgs += '-Xlint:unchecked'
+    }
 
-            // Set options for log level DEBUG
-            debug {
-                events 'started', 'skipped', 'failed'
-                exceptionFormat 'full'
-            }
-
-            // Remove standard output/error logging from --info builds
-            // by assigning only 'failed' and 'skipped' events
-            info {
-                events = ['failed', 'skipped']
-            }
+    // https://github.com/reactor/BlockHound/issues/33
+    tasks.withType(Test) {
+        if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_13)) {
+            jvmArgs += '-XX:+AllowRedefinitionToAddDeleteMethods'
         }
+    }
 
-        failFast = true
+    // https://github.com/jacoco/jacoco/pull/992
+    if (project.hasFlags('coverage')) {
+        jacoco {
+            toolVersion = "0.8.6"
+        }
     }
 }

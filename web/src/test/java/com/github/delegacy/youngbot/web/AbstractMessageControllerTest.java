@@ -91,7 +91,7 @@ class AbstractMessageControllerTest {
 
     @Test
     void testOnWebhook_internalServerErrorException() {
-        when(eventService.process(any())).thenThrow(RuntimeException.class);
+        when(eventService.process(any())).thenThrow(new RuntimeException("oops"));
 
         webClient.post().uri("/api/message/v1/webhook")
                  .contentType(MediaType.APPLICATION_JSON)

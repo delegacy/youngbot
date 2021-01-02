@@ -4,5 +4,6 @@ dependencies {
     api 'com.linecorp.bot:line-bot-api-client'
     api 'com.linecorp.bot:line-bot-parser'
 
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.springframework.boot:spring-boot-starter-reactor-netty'
 }

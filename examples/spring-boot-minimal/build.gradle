@@ -3,4 +3,6 @@ dependencies {
 
     runtimeOnly 'org.slf4j:log4j-over-slf4j'
     runtimeOnly 'ch.qos.logback:logback-classic'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

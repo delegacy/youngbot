@@ -10,10 +10,11 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -58,46 +59,41 @@ class LineServiceTest {
     @Mock
     private LineClient lineClient;
 
+    @Captor
+    private ArgumentCaptor<List<String>> captor;
+
+    @InjectMocks
     private LineService lineService;
-
-    @BeforeEach
-    void beforeEach() throws Exception {
-        when(lineClient.replyMessage(anyString(), any())).thenReturn(Mono.empty());
-
-        lineService = new LineService(eventService, lineClient);
-    }
 
     @Test
     void testHandleCallback() throws Exception {
         final LineMessageEvent event = LineMessageEvent.of("userId", "ping", "replyToken");
         when(eventService.process(any())).thenReturn(Flux.just(EventResponse.of("PONG")));
+        when(lineClient.replyMessage(anyString(), any())).thenReturn(Mono.empty());
 
         StepVerifier.create(lineService.handleCallback(toCallbackRequest(event)))
                     .expectComplete()
                     .verify();
 
-        //noinspection unchecked
-        final ArgumentCaptor<List<String>> responses = ArgumentCaptor.forClass(List.class);
-        verify(lineClient).replyMessage(eq("replyToken"), responses.capture());
+        verify(lineClient).replyMessage(eq("replyToken"), captor.capture());
 
-        assertThat(responses.getValue().size()).isEqualTo(1);
-        assertThat(responses.getValue().get(0)).isEqualTo("PONG");
+        assertThat(captor.getValue().size()).isEqualTo(1);
+        assertThat(captor.getValue().get(0)).isEqualTo("PONG");
     }
 
     @Test
     void testHandleCallback_shouldFollowLimitOnMessagesPerReply() throws Exception {
         final LineMessageEvent event = LineMessageEvent.of("userId", "ping", "replyToken");
         when(eventService.process(any())).thenReturn(Flux.just(EventResponse.of("PONG")).repeat(5));
+        when(lineClient.replyMessage(anyString(), any())).thenReturn(Mono.empty());
 
         StepVerifier.create(lineService.handleCallback(toCallbackRequest(event)))
                     .expectComplete()
                     .verify();
 
-        //noinspection unchecked
-        final ArgumentCaptor<List<String>> responses = ArgumentCaptor.forClass(List.class);
-        verify(lineClient).replyMessage(eq("replyToken"), responses.capture());
+        verify(lineClient).replyMessage(eq("replyToken"), captor.capture());
 
-        assertThat(responses.getValue().size()).isEqualTo(5);
-        assertThat(responses.getValue().get(0)).isEqualTo("PONG");
+        assertThat(captor.getValue().size()).isEqualTo(5);
+        assertThat(captor.getValue().get(0)).isEqualTo("PONG");
     }
 }
