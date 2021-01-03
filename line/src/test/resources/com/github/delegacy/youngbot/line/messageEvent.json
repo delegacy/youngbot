@@ -2,8 +2,8 @@
   "events": [
     {
       "type": "message",
-      "replyToken": "replyToken1",
-      "source": { "userId": "userId1", "type": "user" },
+      "replyToken": "replyToken",
+      "source": { "userId": "userId", "type": "user" },
       "timestamp": 1558967195625,
       "message": {
         "type": "text",
@@ -12,5 +12,5 @@
       }
     }
   ],
-  "destination": "destination1"
+  "destination": "destination"
 }

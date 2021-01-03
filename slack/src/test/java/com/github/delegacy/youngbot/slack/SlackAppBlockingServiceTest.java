@@ -8,9 +8,9 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -19,7 +19,6 @@ import com.github.delegacy.youngbot.internal.testing.TextFileParameterResolver;
 import com.slack.api.app_backend.events.payload.EventsApiPayload;
 import com.slack.api.bolt.App;
 import com.slack.api.bolt.context.builtin.EventContext;
-import com.slack.api.bolt.request.Request;
 import com.slack.api.bolt.request.RequestHeaders;
 import com.slack.api.bolt.request.builtin.EventRequest;
 import com.slack.api.bolt.response.Response;
@@ -38,12 +37,8 @@ class SlackAppBlockingServiceTest {
     @Mock
     private SlackService slackService;
 
+    @InjectMocks
     private SlackAppBlockingService slackAppBlockingService;
-
-    @BeforeEach
-    void beforeEach() throws Exception {
-        slackAppBlockingService = new SlackAppBlockingService(app, slackService);
-    }
 
     @Test
     void testInit() throws Exception {
@@ -55,26 +50,17 @@ class SlackAppBlockingServiceTest {
     }
 
     @Test
-    void testRun(@Mock Request<?> request, @Mock Response response) throws Exception {
-        when(app.run(eq(request))).thenReturn(response);
-
-        final var actual = slackAppBlockingService.run(request);
-        assertThat(actual).isSameAs(response);
-    }
-
-    @Test
-    void testMessageEventHandler(@TextFile("slackEventMessage.json") String json,
-                                 @Mock EventContext ctx) throws Exception {
+    void testMessageEventHandler(@TextFile("slackEventMessage.json") String json, @Mock EventContext ctx)
+            throws Exception {
         EventsApiPayloadParser.getEventTypeAndSubtype(MessageEvent.class);
-        final EventRequest eventRequest = new EventRequest(json, new RequestHeaders(Collections.emptyMap()));
+        final var eventRequest = new EventRequest(json, new RequestHeaders(Collections.emptyMap()));
         final EventsApiPayload<MessageEvent> event = EventsApiPayloadParser.buildEventPayload(eventRequest);
 
-        when(slackService.processEvent(any())).thenReturn(Mono.empty());
+        when(slackService.processEvent(any(SlackMessageEvent.class))).thenReturn(Mono.empty());
         when(ctx.ack()).thenReturn(Response.ok());
 
-        final SlackAppBlockingService.MessageEventHandler messageHandler =
-                slackAppBlockingService.new MessageEventHandler();
-        final Response response = messageHandler.apply(event, ctx);
+        final var messageHandler = slackAppBlockingService.new MessageEventHandler();
+        final var response = messageHandler.apply(event, ctx);
 
         assertThat(response.getStatusCode()).isEqualTo(200);
         verify(slackService).processEvent(any(SlackMessageEvent.class));
@@ -84,16 +70,15 @@ class SlackAppBlockingServiceTest {
     void testReactionAddedEventHandler(@TextFile("slackEventReactionAdded.json") String json,
                                        @Mock EventContext ctx) throws Exception {
         EventsApiPayloadParser.getEventTypeAndSubtype(ReactionAddedEvent.class);
-        final EventRequest eventRequest = new EventRequest(json, new RequestHeaders(Collections.emptyMap()));
+        final var eventRequest = new EventRequest(json, new RequestHeaders(Collections.emptyMap()));
         final EventsApiPayload<ReactionAddedEvent> event =
                 EventsApiPayloadParser.buildEventPayload(eventRequest);
 
-        when(slackService.processEvent(any())).thenReturn(Mono.empty());
+        when(slackService.processEvent(any(SlackReactionEvent.class))).thenReturn(Mono.empty());
         when(ctx.ack()).thenReturn(Response.ok());
 
-        final SlackAppBlockingService.ReactionAddedEventHandler handler =
-                slackAppBlockingService.new ReactionAddedEventHandler();
-        final Response response = handler.apply(event, ctx);
+        final var handler = slackAppBlockingService.new ReactionAddedEventHandler();
+        final var response = handler.apply(event, ctx);
 
         assertThat(response.getStatusCode()).isEqualTo(200);
         verify(slackService).processEvent(any(SlackReactionEvent.class));

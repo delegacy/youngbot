@@ -1,60 +1,63 @@
 package com.github.delegacy.youngbot.internal.testing;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Parameter;
+import java.io.Reader;
 
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 
-import com.google.common.io.CharStreams;
-import com.google.common.io.Closeables;
-
 @SuppressWarnings("ThrowsRuntimeException")
 public class TextFileParameterResolver implements ParameterResolver {
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
             throws ParameterResolutionException {
-
         if (parameterContext.getTarget().isEmpty()) {
             return false;
         }
 
-        final Parameter parameter = parameterContext.getParameter();
+        final var parameter = parameterContext.getParameter();
         if (parameter.getType() != String.class) {
             return false;
         }
 
-        final TextFile annotation = parameterContext.getParameter().getAnnotation(TextFile.class);
-        if (annotation == null) {
-            return false;
-        }
-
-        return !annotation.value().isEmpty();
+        return parameterContext.findAnnotation(TextFile.class)
+                               .map(ann -> !ann.value().isEmpty())
+                               .orElse(false);
     }
 
     @Override
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
             throws ParameterResolutionException {
+        // Checked by supportsParameter
+        //noinspection OptionalGetWithoutIsPresent
+        final var path = parameterContext.findAnnotation(TextFile.class).map(TextFile::value).get();
 
-        final String path = parameterContext.getParameter().getAnnotation(TextFile.class).value();
-
-        @SuppressWarnings("OptionalGetWithoutIsPresent")
-        final InputStream stream = parameterContext.getTarget().get().getClass().getResourceAsStream(path);
-        try {
+        // Checked by supportsParameter
+        //noinspection OptionalGetWithoutIsPresent
+        try (InputStream stream =
+                     parameterContext.getTarget()
+                                     .get()
+                                     .getClass()
+                                     .getResourceAsStream(path)) {
             if (stream == null) {
-                throw new ParameterResolutionException('\'' + path + "' not found");
+                throw new ParameterResolutionException("No resource is found for '" + path + '\'');
             }
 
-            return CharStreams.toString(new InputStreamReader(stream));
+            final var sb = new StringBuilder();
+            try (Reader reader = new BufferedReader(new InputStreamReader(stream))) {
+                int c;
+                while ((c = reader.read()) != -1) {
+                    sb.append((char) c);
+                }
+            }
+            return sb.toString();
         } catch (IOException e) {
-            throw new ParameterResolutionException("Failed to read from '" + path + '\'', e);
-        } finally {
-            //noinspection UnstableApiUsage
-            Closeables.closeQuietly(stream);
+            throw new ParameterResolutionException("Failed to read '" + path + '\'', e);
         }
     }
 }

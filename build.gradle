@@ -65,8 +65,8 @@ configure(projectsWithFlags('java')) {
         options.compilerArgs += '-Xlint:unchecked'
     }
 
-    // https://github.com/reactor/BlockHound/issues/33
     tasks.withType(Test) {
+        // https://github.com/reactor/BlockHound/issues/33
         if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_13)) {
             jvmArgs += '-XX:+AllowRedefinitionToAddDeleteMethods'
         }

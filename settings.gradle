@@ -17,6 +17,6 @@ includeWithFlags ':spring-boot:starter',       'java', 'publish'
 includeWithFlags ':testing-internal', 'java'
 
 // Examples
-includeWithFlags ':examples:spring-boot-minimal', 'java'
-includeWithFlags ':examples:spring-boot-line',    'java'
-includeWithFlags ':examples:spring-boot-slack',   'java'
+includeWithFlags ':examples:spring-boot-minimal', 'java', 'no_aggregation'
+includeWithFlags ':examples:spring-boot-line',    'java', 'no_aggregation'
+includeWithFlags ':examples:spring-boot-slack',   'java', 'no_aggregation'

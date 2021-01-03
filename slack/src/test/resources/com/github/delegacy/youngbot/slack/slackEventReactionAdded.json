@@ -1,13 +1,13 @@
 {
-  "token": "token1",
+  "token": "token",
   "team_id": "teamId",
   "api_app_id": "apiAppId",
   "event": {
     "type": "reaction_added",
-    "user": "user1",
+    "user": "user",
     "item": {
       "type": "message",
-      "channel": "channel1",
+      "channel": "channel",
       "ts": "1603437624.003700"
     },
     "reaction": "reaction",
