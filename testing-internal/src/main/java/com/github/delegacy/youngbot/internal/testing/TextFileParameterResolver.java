@@ -1,18 +1,17 @@
 package com.github.delegacy.youngbot.internal.testing;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 
-@SuppressWarnings("ThrowsRuntimeException")
 public class TextFileParameterResolver implements ParameterResolver {
+    @SuppressWarnings("ThrowsRuntimeException")
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
             throws ParameterResolutionException {
@@ -30,33 +29,21 @@ public class TextFileParameterResolver implements ParameterResolver {
                                .orElse(false);
     }
 
+    @SuppressWarnings("ThrowsRuntimeException")
     @Override
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
             throws ParameterResolutionException {
-        // Checked by supportsParameter
-        //noinspection OptionalGetWithoutIsPresent
+        // Checked in supportsParameter
+        @SuppressWarnings("OptionalGetWithoutIsPresent")
         final var path = parameterContext.findAnnotation(TextFile.class).map(TextFile::value).get();
 
-        // Checked by supportsParameter
-        //noinspection OptionalGetWithoutIsPresent
-        try (InputStream stream =
-                     parameterContext.getTarget()
-                                     .get()
-                                     .getClass()
-                                     .getResourceAsStream(path)) {
-            if (stream == null) {
-                throw new ParameterResolutionException("No resource is found for '" + path + '\'');
-            }
-
-            final var sb = new StringBuilder();
-            try (Reader reader = new BufferedReader(new InputStreamReader(stream))) {
-                int c;
-                while ((c = reader.read()) != -1) {
-                    sb.append((char) c);
-                }
-            }
-            return sb.toString();
-        } catch (IOException e) {
+        try {
+            // Checked in supportsParameter
+            @SuppressWarnings("OptionalGetWithoutIsPresent")
+            final var text = Files.readString(
+                    Path.of(parameterContext.getTarget().get().getClass().getResource(path).toURI()));
+            return text;
+        } catch (IOException | URISyntaxException e) {
             throw new ParameterResolutionException("Failed to read '" + path + '\'', e);
         }
     }
