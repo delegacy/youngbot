@@ -67,7 +67,7 @@ class LineServiceTest {
 
     @Test
     void testHandleCallback() throws Exception {
-        final LineMessageEvent event = LineMessageEvent.of("userId", "ping", "replyToken");
+        final var event = LineMessageEvent.of("userId", "ping", "replyToken");
         when(eventService.process(any())).thenReturn(Flux.just(EventResponse.of("PONG")));
         when(lineClient.replyMessage(anyString(), any())).thenReturn(Mono.empty());
 
@@ -83,7 +83,7 @@ class LineServiceTest {
 
     @Test
     void testHandleCallback_shouldFollowLimitOnMessagesPerReply() throws Exception {
-        final LineMessageEvent event = LineMessageEvent.of("userId", "ping", "replyToken");
+        final var event = LineMessageEvent.of("userId", "ping", "replyToken");
         when(eventService.process(any())).thenReturn(Flux.just(EventResponse.of("PONG")).repeat(5));
         when(lineClient.replyMessage(anyString(), any())).thenReturn(Mono.empty());
 

@@ -1,0 +1,11 @@
+youngbot:
+  line:
+    channel-token: channelToken
+    channel-secret: channelSecret
+    webhook-path: /api/line/v1/webhook
+  slack:
+    bot-token: botToken
+    signing-secret: signingSecret
+    rtm:
+      enabled: false
+    webhook-path: /api/slack/v1/webhook

@@ -79,7 +79,7 @@ public class SlackRtmService implements Closeable {
      * @throws Exception TBW
      */
     @PostConstruct
-    public void initialize() throws Exception {
+    public void init() throws Exception {
         configureRtmClient();
     }
 

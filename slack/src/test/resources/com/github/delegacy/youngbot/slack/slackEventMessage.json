@@ -1,14 +1,14 @@
 {
-  "token": "token1",
+  "token": "token",
   "team_id": "teamId",
   "api_app_id": "apiAppId",
   "event": {
     "client_msg_id": "6f5994aa-6155-46d8-babb-413b70d07d6d",
     "type": "message",
     "text": "ping",
-    "user": "user1",
+    "user": "user",
     "ts": "1558965076.000200",
-    "channel": "channel1",
+    "channel": "channel",
     "event_ts": "1558965076.000200",
     "channel_type": "im"
   },

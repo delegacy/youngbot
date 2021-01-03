@@ -12,9 +12,9 @@ import static org.mockito.Mockito.when;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -51,19 +51,14 @@ class SlackRtmServiceTest {
     @Mock
     private RTMMessageHandler rtmMessageHandler;
 
+    @InjectMocks
     private SlackRtmService slackRtmService;
 
-    @BeforeEach
-    void beforeEach() throws Exception {
-        slackRtmService = new SlackRtmService(rtmClient, slackService,
-                                              scheduledExecutorService, rtmEventDispatcher);
-    }
-
     @Test
-    void testInitialize() throws Exception {
+    void testInit() throws Exception {
         when(rtmEventDispatcher.toMessageHandler()).thenReturn(rtmMessageHandler);
 
-        slackRtmService.initialize();
+        slackRtmService.init();
 
         verify(rtmEventDispatcher).register(any(HelloEventHandler.class));
         verify(rtmEventDispatcher).register(any(GoodbyeEventHandler.class));
@@ -80,8 +75,7 @@ class SlackRtmServiceTest {
 
     @Test
     void testPingTask_whenSessionIsOpen() throws Exception {
-        final SlackRtmService.PingTask pingTask = slackRtmService.new PingTask();
-
+        final var pingTask = slackRtmService.new PingTask();
         pingTask.run();
 
         verify(rtmClient).sendMessage(anyString());
@@ -91,8 +85,7 @@ class SlackRtmServiceTest {
     void testPingTask_whenSessionIsClosed() throws Exception {
         doThrow(IllegalStateException.class).when(rtmClient).sendMessage(anyString());
 
-        final SlackRtmService.PingTask pingTask = slackRtmService.new PingTask();
-
+        final var pingTask = slackRtmService.new PingTask();
         pingTask.run();
 
         // 1 from configureRtmClient, 1 from pingTask
@@ -101,8 +94,7 @@ class SlackRtmServiceTest {
 
     @Test
     void testGoodbyeEventHandler() throws Exception {
-        final GoodbyeEventHandler goodbyeEventHandler = slackRtmService.new GoodbyeEventHandler();
-
+        final var goodbyeEventHandler = slackRtmService.new GoodbyeEventHandler();
         goodbyeEventHandler.handle(new GoodbyeEvent());
 
         verify(rtmClient).disconnect();
@@ -110,7 +102,7 @@ class SlackRtmServiceTest {
 
     @Test
     void testMessageEventHandler() throws Exception {
-        final MessageEvent event = new MessageEvent();
+        final var event = new MessageEvent();
         event.setChannel("channel");
         event.setText("ping");
         event.setUser("user");
@@ -118,8 +110,7 @@ class SlackRtmServiceTest {
 
         when(slackService.processEvent(any())).thenReturn(Mono.empty());
 
-        final SlackRtmService.MessageEventHandler messageHandler =
-                slackRtmService.new MessageEventHandler();
+        final var messageHandler = slackRtmService.new MessageEventHandler();
         messageHandler.handle(event);
 
         verify(slackService).processEvent(any(SlackMessageEvent.class));
@@ -127,7 +118,7 @@ class SlackRtmServiceTest {
 
     @Test
     void testReactionAddedEventHandler() throws Exception {
-        final ReactionAddedEvent event = new ReactionAddedEvent();
+        final var event = new ReactionAddedEvent();
         event.setReaction("reaction");
         event.setUser("user");
         final Item item = new Item();
@@ -137,8 +128,7 @@ class SlackRtmServiceTest {
 
         when(slackService.processEvent(any())).thenReturn(Mono.empty());
 
-        final SlackRtmService.ReactionAddedEventHandler handler =
-                slackRtmService.new ReactionAddedEventHandler();
+        final var handler = slackRtmService.new ReactionAddedEventHandler();
         handler.handle(event);
 
         verify(slackService).processEvent(any(SlackReactionEvent.class));

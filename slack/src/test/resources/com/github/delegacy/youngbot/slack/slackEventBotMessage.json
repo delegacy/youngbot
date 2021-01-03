@@ -1,5 +1,5 @@
 {
-  "token": "token1",
+  "token": "token",
   "team_id": "teamId",
   "api_app_id": "apiAppId",
   "event": {
@@ -7,9 +7,9 @@
     "subtype": "bot_message",
     "text": "PONG",
     "ts": "1558965077.000300",
-    "username": "username1",
+    "username": "username",
     "bot_id": "botId",
-    "channel": "channel1",
+    "channel": "channel",
     "event_ts": "1558965077.000300",
     "channel_type": "im"
   },

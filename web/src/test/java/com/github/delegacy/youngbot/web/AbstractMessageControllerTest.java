@@ -14,27 +14,17 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.BodyInserters;
 
 import com.github.delegacy.youngbot.event.EventResponse;
 import com.github.delegacy.youngbot.event.EventService;
-import com.github.delegacy.youngbot.internal.testing.TestConfiguration;
 
 import reactor.core.publisher.Flux;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = TestConfiguration.class)
-@WebFluxTest(AbstractMessageControllerTest.MessageController.class)
+@WebFluxTest(MessageController.class)
 class AbstractMessageControllerTest {
-    @RestController
-    static class MessageController extends AbstractMessageController {
-        @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-        protected MessageController(EventService eventService) {
-            super(eventService);
-        }
-    }
-
     @MockBean
     private EventService eventService;
 

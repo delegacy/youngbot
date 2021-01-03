@@ -15,10 +15,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.BodyInserters;
 
-import com.github.delegacy.youngbot.internal.testing.TestConfiguration;
 import com.github.delegacy.youngbot.internal.testing.TextFile;
 import com.github.delegacy.youngbot.internal.testing.TextFileParameterResolver;
 
@@ -32,20 +30,12 @@ import reactor.core.publisher.Mono;
 @ExtendWith(SpringExtension.class)
 @ExtendWith(TextFileParameterResolver.class)
 @ContextConfiguration(classes = TestConfiguration.class)
-@WebFluxTest(AbstractLineControllerTest.LineController.class)
+@WebFluxTest(LineController.class)
 class AbstractLineControllerTest {
-    @RestController
-    static class LineController extends AbstractLineController {
-        @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-        protected LineController(LineService lineService, LineSignatureValidator lineSignatureValidator) {
-            super(lineService, lineSignatureValidator);
-        }
-    }
-
     @Resource
     private WebTestClient webClient;
 
-    @MockBean
+    @Resource
     private LineSignatureValidator lineSignatureValidator;
 
     @MockBean
@@ -62,14 +52,12 @@ class AbstractLineControllerTest {
                  .exchange()
                  .expectStatus().isOk();
 
-        final ArgumentCaptor<CallbackRequest> callbackCaptor =
-                ArgumentCaptor.forClass(CallbackRequest.class);
-        verify(lineService).handleCallback(callbackCaptor.capture());
+        final ArgumentCaptor<CallbackRequest> captor = ArgumentCaptor.forClass(CallbackRequest.class);
+        verify(lineService).handleCallback(captor.capture());
 
         @SuppressWarnings("unchecked")
-        final MessageEvent<TextMessageContent> event =
-                (MessageEvent<TextMessageContent>) callbackCaptor.getValue().getEvents().get(0);
-        assertThat(event.getReplyToken()).isEqualTo("replyToken1");
+        final var event = (MessageEvent<TextMessageContent>) captor.getValue().getEvents().get(0);
+        assertThat(event.getReplyToken()).isEqualTo("replyToken");
         assertThat(event.getMessage().getText()).isEqualTo("ping");
     }
 
