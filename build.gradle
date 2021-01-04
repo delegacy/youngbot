@@ -71,11 +71,4 @@ configure(projectsWithFlags('java')) {
             jvmArgs += '-XX:+AllowRedefinitionToAddDeleteMethods'
         }
     }
-
-    // https://github.com/jacoco/jacoco/pull/992
-    if (project.hasFlags('coverage')) {
-        jacoco {
-            toolVersion = "0.8.6"
-        }
-    }
 }

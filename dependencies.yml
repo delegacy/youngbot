@@ -51,3 +51,7 @@ io.projectreactor.tools:
 org.awaitility:
   awaitility:
     version: '4.0.3'
+
+org.jacoco:
+  org.jacoco.ant:
+    version: '0.8.6'
