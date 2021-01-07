@@ -25,6 +25,7 @@ public class EventService {
     public Flux<EventResponse> process(Event event) {
         return Flux.fromIterable(processors)
                    .concatMap(p -> p.process(event))
+                   .filter(res -> !res.text().isEmpty())
                    .subscriberContext(ctx -> ctx.put(EventContext.class, new DefaultEventContext(event)));
     }
 }
